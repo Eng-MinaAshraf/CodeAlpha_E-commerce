@@ -10,22 +10,6 @@
         if (session?.user?.email !== 'admin@store.com') window.location.replace('/');
       } catch(e) {}
     }
-
-    // Copy buttons logic
-    document.addEventListener('click', (e) => {
-      const copyBtn = e.target.closest('.copy-btn');
-      if (!copyBtn) return;
-      const targetId = copyBtn.dataset.target;
-      const text = document.getElementById(targetId)?.textContent;
-      if (text) {
-        navigator.clipboard.writeText(text).then(() => {
-          const icon = copyBtn.querySelector('i');
-          icon.className = 'fas fa-check text-success';
-          setTimeout(() => { icon.className = 'fas fa-copy'; }, 1500);
-          toast.success('تم النسخ!');
-        });
-      }
-    });
   </script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -38,7 +22,6 @@
   <link rel="stylesheet" href="/css/pages/admin.css">
 
   <style>
-    /* Alignment fix */
     .admin-card-header {
       margin-bottom: 15px;
       display: flex;
@@ -53,42 +36,15 @@
       align-items: center;
       gap: 10px;
     }
-    .admin-table-container {
-      margin-top: 0;
-    }
-    .admin-table th, .admin-table td {
-      vertical-align: middle;
-    }
-  </style>
-
-  <style>
-    /* Final alignment fix */
-    .admin-card-header {
-      margin-bottom: 15px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding-bottom: 10px;
-      border-bottom: 1px solid rgba(255,255,255,0.05);
-    }
-    .admin-card-title {
-      margin: 0 !important;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .admin-table-container {
-      margin-top: 0;
-    }
+    .admin-table-container { margin-top: 0; }
+    .admin-table th, .admin-table td { vertical-align: middle; }
   </style>
 </head>
 <body class="admin-body">
   
   <div class="admin-layout">
-    <!-- Sidebar (Same as dashboard) -->
+    <!-- Sidebar -->
     <aside class="admin-sidebar" id="admin-sidebar">
-      
-      
       <div class="sidebar-header">
         <a href="/pages/admin/dashboard.html" class="sidebar-brand">
           <i class="fas fa-user-shield text-accent"></i>
@@ -127,7 +83,6 @@
           <i class="fas fa-sign-out-alt"></i> تسجيل الخروج
         </a>
       </div>
-
     </aside>
 
     <main class="admin-main">
@@ -138,7 +93,7 @@
         <h1 class="admin-page-title">فريق التوصيل</h1>
         <div class="admin-header-actions">
           <button class="btn btn-primary" onclick="document.getElementById('add-delivery-modal').classList.add('active')">
-        <i class="fas fa-plus"></i> إضافة مندوب جديد
+            <i class="fas fa-plus"></i> إضافة مندوب جديد
           </button>
         </div>
       </header>
@@ -151,14 +106,14 @@
           <div class="admin-table-container">
             <table class="admin-table">
               <thead>
-                  <tr>
-                    <th>الاسم</th>
-                    <th>البريد الإلكتروني</th>
-                    <th>الهاتف</th>
-                    <th>تاريخ الإضافة</th>
-                    <th>الإجراءات</th>
-                  </tr>
-                </thead>
+                <tr>
+                  <th>الاسم</th>
+                  <th>البريد الإلكتروني</th>
+                  <th>الهاتف</th>
+                  <th>تاريخ الإضافة</th>
+                  <th>الإجراءات</th>
+                </tr>
+              </thead>
               <tbody id="delivery-staff-body">
                 <tr><td colspan="5" class="text-center py-xl"><div class="spinner"></div></td></tr>
               </tbody>
@@ -169,26 +124,24 @@
     </main>
   </div>
 
-  
-
   <!-- Add Delivery Staff Modal -->
   <div class="modal-overlay" id="add-delivery-modal">
     <div class="modal-content admin-card">
       <div class="modal-header">
-        <h2></h2>
+        <h2><i class="fas fa-user-plus text-accent"></i> إضافة مندوب جديد</h2>
         <button class="modal-close" onclick="document.getElementById('add-delivery-modal').classList.remove('active')">
           <i class="fas fa-times"></i>
         </button>
       </div>
       <form id="add-delivery-form">
         <div class="form-group">
-          <label class="form-label" for="del-name">اسم الموظف</label>
-          <input type="text" id="staff-name" class="form-input" placeholder="بحث..." required>
+          <label class="form-label" for="staff-name">اسم الموظف (بالإنجليزية)</label>
+          <input type="text" id="staff-name" class="form-input" placeholder="e.g. Ahmed Ali" required>
         </div>
         <div class="form-group">
-          <label class="form-label" for="del-phone">رقم الهاتف</label>
-          <input type="tel" id="staff-phone" class="form-input" placeholder="بحث..." required>
-        <p class="text-sm text-secondary mt-xs"><i class="fas fa-info-circle"></i> أدخل بيانات مندوب التوصيل لإسناد الطلبات إليه.</p>
+          <label class="form-label" for="staff-phone">رقم الهاتف</label>
+          <input type="tel" id="staff-phone" class="form-input" placeholder="01xxxxxxxxx" required>
+          <p class="text-sm text-secondary mt-xs"><i class="fas fa-info-circle"></i> أدخل بيانات مندوب التوصيل لإسناد الطلبات إليه.</p>
         </div>
         <button type="submit" class="btn btn-primary btn-block mt-lg" id="submit-staff-btn">
           إضافة المندوب لفريق التوصيل
@@ -209,19 +162,19 @@
       <form id="edit-delivery-form">
         <input type="hidden" id="edit-staff-id">
         <div class="form-group">
-          <label class="form-label" for="edit-del-name">اسم الموظف</label>
+          <label class="form-label">اسم الموظف (بالإنجليزية)</label>
           <input type="text" id="edit-staff-name" class="form-input" required>
         </div>
         <div class="form-group">
-          <label class="form-label" for="edit-del-phone">رقم الهاتف</label>
+          <label class="form-label">رقم الهاتف</label>
           <input type="tel" id="edit-staff-phone" class="form-input" required>
         </div>
         <div class="form-group">
-          <label class="form-label" for="edit-staff-email">البريد الإلكتروني</label>
+          <label class="form-label">البريد الإلكتروني</label>
           <input type="email" id="edit-staff-email" class="form-input" required>
         </div>
         <div class="form-group">
-          <label class="form-label" for="edit-staff-password">كلمة المرور الافتراضية / الحديثة</label>
+          <label class="form-label">كلمة المرور الافتراضية / الحديثة</label>
           <input type="text" id="edit-staff-password" class="form-input" required>
         </div>
         <button type="submit" class="btn btn-primary btn-block mt-lg" id="edit-submit-staff-btn">
@@ -271,21 +224,35 @@
       </button>
     </div>
   </div>
-      
-      <button class="btn btn-primary btn-block" onclick="document.getElementById('credentials-modal').classList.remove('active')">
-                <i class="fas fa-check ml-xs"></i> تم الحفظ
-      </button>
-    </div>
-  </div>
 
   <script type="module">
     import { authManager } from '/js/auth.js';
     import { toast } from '/js/toast.js';
     import { formatDate, customConfirm } from '/js/utils.js';
 
+    // ==========================================
+    // Copy buttons logic
+    // ==========================================
+    document.addEventListener('click', (e) => {
+      const copyBtn = e.target.closest('.copy-btn');
+      if (!copyBtn) return;
+      const targetId = copyBtn.dataset.target;
+      const text = document.getElementById(targetId)?.textContent;
+      if (text) {
+        navigator.clipboard.writeText(text).then(() => {
+          const icon = copyBtn.querySelector('i');
+          icon.className = 'fas fa-check text-success';
+          setTimeout(() => { icon.className = 'fas fa-copy'; }, 1500);
+          toast.success('تم النسخ!');
+        });
+      }
+    });
+
+    // ==========================================
+    // Auth & Admin Avatar
+    // ==========================================
     authManager.onAuthChange(async (user) => {
       if (!user || user.email !== 'admin@store.com') {
-
         return;
       }
       // تحديث صورة المدير في الـ sidebar
@@ -311,9 +278,11 @@
     document.getElementById('admin-logout-btn').addEventListener('click', async (e) => {
       e.preventDefault();
       await authManager.logout();
-
     });
 
+    // ==========================================
+    // Load Delivery Staff
+    // ==========================================
     async function loadDeliveryStaff() {
       try {
         const token = await authManager.getIdToken();
@@ -324,11 +293,10 @@
         
         const tbody = document.getElementById('delivery-staff-body');
         if (response.success) {
-          window.currentStaffData = response.data; // Store for edit modal
+          window.currentStaffData = response.data;
           if (response.data.length === 0) {
             tbody.innerHTML = '<tr><td colspan="5" class="text-center text-secondary py-xl">لا توجد بيانات حالياً</td></tr>';
           } else {
-            window.currentStaffData = response.data;
             tbody.innerHTML = response.data.map(staff => `
               <tr>
                 <td><strong>${staff.name}</strong></td>
@@ -337,6 +305,9 @@
                 <td><span class="text-secondary">${formatDate(staff.created_at)}</span></td>
                 <td>
                   <div style="display: flex; gap: 8px;">
+                    <button class="btn btn-outline btn-sm border-primary text-primary view-cred-btn" data-id="${staff.id}" title="بيانات الدخول">
+                      <i class="fas fa-key"></i>
+                    </button>
                     <button class="btn btn-outline btn-sm hover-bg-success hover-text-white border-success text-success edit-btn" data-id="${staff.id}">
                       <i class="fas fa-edit"></i> تعديل
                     </button>
@@ -348,19 +319,18 @@
               </tr>
             `).join('');
 
-            
-    // View Credentials Event
-    document.querySelectorAll('.view-cred-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        const id = e.currentTarget.dataset.id;
-        const staff = window.currentStaffData.find(s => s.id == id);
-        if (staff) {
-          document.getElementById('new-staff-email').textContent = staff.email;
-          document.getElementById('new-staff-password').textContent = staff.password;
-          document.getElementById('credentials-modal').classList.add('active');
-        }
-      });
-    });
+            // View Credentials Event
+            document.querySelectorAll('.view-cred-btn').forEach(btn => {
+              btn.addEventListener('click', (e) => {
+                const id = e.currentTarget.dataset.id;
+                const staff = window.currentStaffData.find(s => s.id == id);
+                if (staff) {
+                  document.getElementById('new-staff-email').textContent = staff.email || 'غير متوفر';
+                  document.getElementById('new-staff-password').textContent = staff.password || 'غير متوفر';
+                  document.getElementById('credentials-modal').classList.add('active');
+                }
+              });
+            });
 
             // Attach edit events
             document.querySelectorAll('.edit-btn').forEach(btn => {
@@ -388,6 +358,9 @@
       }
     }
 
+    // ==========================================
+    // Delete Staff
+    // ==========================================
     async function deleteStaff(id) {
       try {
         const token = await authManager.getIdToken();
@@ -407,6 +380,9 @@
       }
     }
 
+    // ==========================================
+    // Add Staff
+    // ==========================================
     document.getElementById('add-delivery-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const btn = document.getElementById('submit-staff-btn');
@@ -415,18 +391,12 @@
 
       try {
         const name = document.getElementById('staff-name').value.trim();
-      if (/[\u0600-\u06FF]/.test(name)) {
-        toast.error('لا يسمح بإدخال الاسم باللغة العربية (يرجى كتابة الاسم بالإنجليزية)');
-        btn.classList.remove('btn-loading');
-        btn.disabled = false;
-        return;
-      }
-      if (/[\u0600-\u06FF]/.test(name)) {
-        toast.error('لا يسمح بإدخال الاسم باللغة العربية (يرجى كتابة الاسم بالإنجليزية)');
-        btn.classList.remove('btn-loading');
-        btn.disabled = false;
-        return;
-      }
+        if (/[\u0600-\u06FF]/.test(name)) {
+          toast.error('لا يسمح بإدخال الاسم باللغة العربية (يرجى كتابة الاسم بالإنجليزية)');
+          btn.classList.remove('btn-loading');
+          btn.disabled = false;
+          return;
+        }
 
         const phone = document.getElementById('staff-phone').value.trim();
         const token = await authManager.getIdToken();
@@ -461,13 +431,14 @@
         btn.disabled = false;
       }
     });
-    // Edit Staff Logic
+
+    // ==========================================
+    // Edit Staff
+    // ==========================================
     function openEditModal(staff) {
       document.getElementById('edit-staff-id').value = staff.id;
       document.getElementById('edit-staff-name').value = staff.name;
       document.getElementById('edit-staff-phone').value = staff.phone || '';
-      document.getElementById('edit-staff-email').value = staff.email || '';
-      document.getElementById('edit-staff-password').value = staff.password || '';
       document.getElementById('edit-staff-email').value = staff.email || '';
       document.getElementById('edit-staff-password').value = staff.password || '';
       document.getElementById('edit-delivery-modal').classList.add('active');
@@ -480,15 +451,7 @@
       const phone = document.getElementById('edit-staff-phone').value;
       const email = document.getElementById('edit-staff-email').value;
       const password = document.getElementById('edit-staff-password').value;
-      
-      if (/[\u0600-\u06FF]/.test(name)) {
-        toast.error('لا يسمح بإدخال الاسم باللغة العربية');
-        btn.disabled = false;
-        btn.classList.remove('btn-loading');
-        return;
-      }
-      const email = document.getElementById('edit-staff-email').value;
-      const password = document.getElementById('edit-staff-password').value;
+
       if (/[\u0600-\u06FF]/.test(name)) {
         toast.error('لا يسمح بإدخال الاسم باللغة العربية');
         return;
@@ -528,4 +491,3 @@
   </script>
 </body>
 </html>
-
