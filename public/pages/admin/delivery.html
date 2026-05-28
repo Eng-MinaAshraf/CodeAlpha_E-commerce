@@ -437,7 +437,7 @@
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}` 
           },
-          body: JSON.stringify({ name, phone, email, password })
+          body: JSON.stringify({ name, phone })
         });
         const response = await res.json();
         
