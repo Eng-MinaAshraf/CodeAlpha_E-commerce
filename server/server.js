@@ -49,10 +49,9 @@ app.use(helmet({
 
 // السماح بالطلبات من جميع المصادر (CORS)
 app.use(cors({
-  origin: true, // السماح بجميع المصادر في التطوير
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+    origin: '*', 
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 // تسجيل الطلبات في وحدة التحكم (Logging)
