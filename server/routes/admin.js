@@ -7,6 +7,7 @@ import { Router } from 'express';
 import { requireAdmin } from '../middleware/auth.js';
 import { supabase } from '../config/supabase.js';
 import crypto from 'crypto';
+import bcrypt from 'bcryptjs';
 
 const router = Router();
 
@@ -172,7 +173,8 @@ router.post('/delivery', async (req, res, next) => {
     // Generate random email and password
     const emailStr = name.trim().toLowerCase().replace(/\s+/g, '.') + '.' + Math.floor(1000 + Math.random() * 9000);
     const email = `${emailStr}@delivery.store.com`;
-    const password = crypto.randomBytes(4).toString('hex'); // 8 char random hex
+    const plainPassword = crypto.randomBytes(4).toString('hex'); // 8 char random hex
+    const hashedPassword = await bcrypt.hash(plainPassword, 10);
 
     // Insert into custom table
     const { data: staff, error } = await supabase
@@ -180,7 +182,7 @@ router.post('/delivery', async (req, res, next) => {
       .insert({
         name,
         email,
-        password,
+        password: hashedPassword,
         phone
       })
       .select()
@@ -190,8 +192,11 @@ router.post('/delivery', async (req, res, next) => {
 
     res.status(201).json({ 
       success: true, 
-      message: 'تم إضافة الموظف بنجاح', 
-      data: staff // Includes generated email and password so admin can give it to the staff
+      message: 'تم إضافة المندوب بنجاح', 
+      data: {
+        ...staff,
+        password: plainPassword // Return plain text password so admin can view/copy it
+      }
     });
   } catch (error) {
     next(error);
@@ -216,9 +221,15 @@ router.put('/delivery/:id', async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'الاسم مكرر، يرجى كتابة الاسم الثنائي أو إضافة اسم الأب' });
     }
 
+    const updateData = { name, phone, email };
+    if (password) {
+      const isAlreadyHashed = password.startsWith('$2a$') || password.startsWith('$2b$') || password.length === 60;
+      updateData.password = isAlreadyHashed ? password : await bcrypt.hash(password, 10);
+    }
+
     const { data: staff, error } = await supabase
       .from('delivery_staff')
-      .update({ name, phone, email, password })
+      .update(updateData)
       .eq('id', id)
       .select()
       .single();
@@ -299,6 +310,100 @@ router.put('/orders/:id/assign', async (req, res, next) => {
       message: 'تم إسناد الطلب وتحديث حالته بنجاح',
       data: order
     });
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * GET /api/admin/delivery-recovery
+ * جلب جميع طلبات استعادة كلمة المرور
+ */
+router.get('/delivery-recovery', async (req, res, next) => {
+  try {
+    const { data, error } = await supabase
+      .from('password_recovery_requests')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    res.json({ success: true, data });
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * PUT /api/admin/delivery-recovery/:id/approve
+ * قبول طلب الاستعادة وإعادة تعيين كلمة المرور للافتراضي
+ */
+router.put('/delivery-recovery/:id/approve', async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    // جلب الطلب للتحقق من المندوب
+    const { data: request, error: reqError } = await supabase
+      .from('password_recovery_requests')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (reqError || !request) {
+      return res.status(404).json({ success: false, message: 'طلب استعادة كلمة المرور غير موجود' });
+    }
+
+    // التأكد من وجود المندوب
+    const { data: agent, error: agentError } = await supabase
+      .from('delivery_staff')
+      .select('id')
+      .eq('id', request.agent_id)
+      .single();
+
+    if (agentError || !agent) {
+      return res.status(404).json({ success: false, message: 'لم يتم العثور على حساب المندوب في قاعدة البيانات' });
+    }
+
+    // إعادة تعيين كلمة مرور المندوب إلى كلمة المرور الافتراضية
+    const DEFAULT_PASSWORD = 'DeliveryDefault123!';
+    const hashedPassword = await bcrypt.hash(DEFAULT_PASSWORD, 10);
+
+    const { error: updateAgentErr } = await supabase
+      .from('delivery_staff')
+      .update({ password: hashedPassword })
+      .eq('id', agent.id);
+
+    if (updateAgentErr) throw updateAgentErr;
+
+    // تحديث حالة الطلب
+    const { error: updateReqErr } = await supabase
+      .from('password_recovery_requests')
+      .update({ status: 'approved' })
+      .eq('id', id);
+
+    if (updateReqErr) throw updateReqErr;
+
+    res.json({ success: true, message: 'تمت الموافقة بنجاح وإعادة تعيين كلمة المرور للوضع الافتراضي' });
+  } catch (error) {
+    next(error);
+  }
+});
+
+/**
+ * PUT /api/admin/delivery-recovery/:id/reject
+ * رفض طلب استعادة كلمة المرور
+ */
+router.put('/delivery-recovery/:id/reject', async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const { error } = await supabase
+      .from('password_recovery_requests')
+      .update({ status: 'rejected' })
+      .eq('id', id);
+
+    if (error) throw error;
+
+    res.json({ success: true, message: 'تم رفض طلب الاستعادة بنجاح' });
   } catch (error) {
     next(error);
   }

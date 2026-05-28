@@ -120,6 +120,29 @@
             </table>
           </div>
         </div>
+
+        <!-- Password Recovery Requests Card -->
+        <div class="admin-card mt-lg">
+          <div class="admin-card-header">
+            <h2 class="admin-card-title"><i class="fas fa-key text-accent ml-xs"></i> طلبات استعادة كلمة المرور</h2>
+          </div>
+          <div class="admin-table-container">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>المندوب</th>
+                  <th>البريد الإلكتروني</th>
+                  <th>تاريخ الطلب</th>
+                  <th>الحالة</th>
+                  <th>الإجراءات</th>
+                </tr>
+              </thead>
+              <tbody id="recovery-requests-body">
+                <tr><td colspan="5" class="text-center py-xl"><div class="spinner"></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </main>
   </div>
@@ -184,7 +207,7 @@
     </div>
   </div>
 
-  <!-- Credentials Result Modal -->
+  <!-- Credentials Result & Edit Modal -->
   <div class="modal-overlay" id="credentials-modal">
     <div class="modal-content admin-card text-center" style="max-width: 480px;">
       <div class="modal-header border-none mb-0">
@@ -195,8 +218,8 @@
       <div class="text-success text-5xl mb-md">
         <i class="fas fa-check-circle"></i>
       </div>
-      <h2 class="mb-md">تم إضافة المندوب بنجاح!</h2>
-      <p class="text-secondary mb-lg">تم إنشاء حساب المندوب. يرجى نسخ البيانات التالية وإرسالها للمندوب.</p>
+      <h2 class="mb-md" id="credentials-modal-title">بيانات الدخول للمندوب</h2>
+      <p class="text-secondary mb-lg" id="credentials-modal-desc">تم إنشاء حساب المندوب. يرجى نسخ البيانات التالية وإرسالها للمندوب.</p>
       
       <div class="bg-input radius-md p-md mb-lg text-right" style="border: 1px solid var(--border-color)">
         <div class="mb-sm" style="display:flex;justify-content:space-between;align-items:center;">
@@ -208,7 +231,8 @@
             <i class="fas fa-copy"></i>
           </button>
         </div>
-        <div style="display:flex;justify-content:space-between;align-items:center;">
+        
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
           <div>
             <span class="text-secondary" style="font-size:0.8rem;">كلمة المرور</span><br>
             <strong class="text-accent text-lg" id="new-staff-password" style="user-select: all;"></strong>
@@ -217,10 +241,18 @@
             <i class="fas fa-copy"></i>
           </button>
         </div>
+
+        <div id="credentials-update-password-container" style="border-top: 1px dashed var(--border-color); padding-top: 15px;">
+          <label class="form-label text-right" style="display:block; font-size:0.8rem; margin-bottom:5px;">تعيين كلمة مرور جديدة</label>
+          <div style="display:flex; gap:8px;">
+            <input type="text" id="credentials-new-password-input" class="form-input" placeholder="أدخل كلمة مرور جديدة للتحديث" style="padding: 8px 12px; font-size: 0.9rem;">
+            <button type="button" class="btn btn-primary" id="credentials-update-btn" style="min-width:auto; padding:8px 15px; font-size:0.9rem;">تحديث</button>
+          </div>
+        </div>
       </div>
       
       <button class="btn btn-primary btn-block" onclick="document.getElementById('credentials-modal').classList.remove('active')">
-        <i class="fas fa-check ml-xs"></i> تم الحفظ
+        <i class="fas fa-check ml-xs"></i> إغلاق
       </button>
     </div>
   </div>
@@ -269,6 +301,7 @@
       const adminEmail = document.getElementById('sidebar-admin-email');
       if (user.email) adminEmail.textContent = user.email;
       loadDeliveryStaff();
+      loadRecoveryRequests();
     });
 
     document.getElementById('admin-menu-toggle').addEventListener('click', () => {
@@ -325,8 +358,16 @@
                 const id = e.currentTarget.dataset.id;
                 const staff = window.currentStaffData.find(s => s.id == id);
                 if (staff) {
+                  document.getElementById('credentials-modal-title').textContent = 'بيانات الدخول للمندوب';
+                  document.getElementById('credentials-modal-desc').textContent = 'يمكنك عرض البريد وتعديل كلمة مرور المندوب.';
                   document.getElementById('new-staff-email').textContent = staff.email || 'غير متوفر';
-                  document.getElementById('new-staff-password').textContent = staff.password || 'غير متوفر';
+                  
+                  const isHashed = staff.password && (staff.password.startsWith('$2a$') || staff.password.startsWith('$2b$'));
+                  document.getElementById('new-staff-password').textContent = isHashed ? '•••••••• (محمية ومسجلة)' : (staff.password || 'غير متوفر');
+                  
+                  document.getElementById('credentials-update-btn').dataset.id = staff.id;
+                  document.getElementById('credentials-new-password-input').value = '';
+                  
                   document.getElementById('credentials-modal').classList.add('active');
                 }
               });
@@ -351,6 +392,8 @@
               });
             });
           }
+        } else {
+          tbody.innerHTML = `<tr><td colspan="5" class="text-center text-error py-xl">${response.message || 'حدث خطأ في تحميل البيانات'}</td></tr>`;
         }
       } catch (err) {
         toast.error('حدث خطأ أثناء العملية');
@@ -416,8 +459,13 @@
           document.getElementById('add-delivery-form').reset();
           
           // Show credentials
+          document.getElementById('credentials-modal-title').textContent = 'تم إضافة المندوب بنجاح!';
+          document.getElementById('credentials-modal-desc').textContent = 'تم إنشاء حساب المندوب. يرجى نسخ البيانات التالية وإرسالها للمندوب.';
           document.getElementById('new-staff-email').textContent = response.data.email;
           document.getElementById('new-staff-password').textContent = response.data.password;
+          
+          document.getElementById('credentials-update-btn').dataset.id = response.data.id;
+          document.getElementById('credentials-new-password-input').value = '';
           document.getElementById('credentials-modal').classList.add('active');
           
           loadDeliveryStaff();
@@ -476,6 +524,16 @@
         if (response.success) {
           toast.success('تمت العملية بنجاح');
           document.getElementById('edit-delivery-modal').classList.remove('active');
+          
+          // تحديث الحالة المحلية فوراً لكي تظهر التعديلات مباشرة
+          const staffIndex = window.currentStaffData.findIndex(s => s.id == id);
+          if (staffIndex !== -1) {
+            window.currentStaffData[staffIndex].password = password;
+            window.currentStaffData[staffIndex].name = name;
+            window.currentStaffData[staffIndex].phone = phone;
+            window.currentStaffData[staffIndex].email = email;
+          }
+          
           loadDeliveryStaff();
         } else {
           toast.error(response.message);
@@ -486,6 +544,184 @@
       } finally {
         btn.disabled = false;
         btn.innerText = 'حفظ التعديلات';
+      }
+    });
+
+    // ==========================================
+    // Load Recovery Requests
+    // ==========================================
+    async function loadRecoveryRequests() {
+      try {
+        const token = await authManager.getIdToken();
+        const res = await fetch('/api/admin/delivery-recovery', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const response = await res.json();
+        
+        const tbody = document.getElementById('recovery-requests-body');
+        if (response.success) {
+          if (response.data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center text-secondary py-xl">لا توجد طلبات معلقة حالياً</td></tr>';
+          } else {
+            tbody.innerHTML = response.data.map(req => {
+              let statusBadge = '';
+              if (req.status === 'pending') {
+                statusBadge = '<span class="badge badge-warning" style="background:#f59e0b;color:#fff;padding:4px 8px;border-radius:4px;">قيد الانتظار</span>';
+              } else if (req.status === 'approved') {
+                statusBadge = '<span class="badge badge-success" style="background:#10b981;color:#fff;padding:4px 8px;border-radius:4px;">تم القبول</span>';
+              } else {
+                statusBadge = '<span class="badge badge-error" style="background:#ef4444;color:#fff;padding:4px 8px;border-radius:4px;">تم الرفض</span>';
+              }
+
+              let actionButtons = '';
+              if (req.status === 'pending') {
+                actionButtons = `
+                  <button class="btn btn-outline btn-sm hover-bg-success hover-text-white border-success text-success approve-req-btn" data-id="${req.id}" style="padding:4px 8px;font-size:0.8rem;">
+                    <i class="fas fa-check"></i> قبول
+                  </button>
+                  <button class="btn btn-outline btn-sm hover-bg-error hover-text-white border-error text-error reject-req-btn" data-id="${req.id}" style="padding:4px 8px;font-size:0.8rem;">
+                    <i class="fas fa-times"></i> رفض
+                  </button>
+                `;
+              } else {
+                actionButtons = '<span class="text-xs text-secondary">-</span>';
+              }
+
+              return `
+                <tr>
+                  <td><strong>${req.agent_name}</strong></td>
+                  <td><span class="text-secondary">${req.agent_email}</span></td>
+                  <td><span class="text-secondary">${formatDate(req.created_at)}</span></td>
+                  <td>${statusBadge}</td>
+                  <td>
+                    <div style="display: flex; gap: 8px;">
+                      ${actionButtons}
+                    </div>
+                  </td>
+                </tr>
+              `;
+            }).join('');
+
+            // Attach Approve Event
+            document.querySelectorAll('.approve-req-btn').forEach(btn => {
+              btn.addEventListener('click', (e) => {
+                const id = e.currentTarget.dataset.id;
+                customConfirm('تأكيد القبول', 'هل أنت متأكد من رغبتك في قبول طلب المندوب؟ سيتم إعادة تعيين كلمة مروره إلى القيمة الافتراضية (DeliveryDefault123!).', async () => {
+                  approveRequest(id);
+                });
+              });
+            });
+
+            // Attach Reject Event
+            document.querySelectorAll('.reject-req-btn').forEach(btn => {
+              btn.addEventListener('click', (e) => {
+                const id = e.currentTarget.dataset.id;
+                customConfirm('تأكيد الرفض', 'هل أنت متأكد من رغبتك في رفض طلب المندوب؟', async () => {
+                  rejectRequest(id);
+                });
+              });
+            });
+          }
+        } else {
+          tbody.innerHTML = `<tr><td colspan="5" class="text-center text-error py-xl">${response.message || 'حدث خطأ في تحميل البيانات'}</td></tr>`;
+        }
+      } catch (err) {
+        document.getElementById('recovery-requests-body').innerHTML = '<tr><td colspan="5" class="text-center text-error py-xl">حدث خطأ في تحميل طلبات الاستعادة</td></tr>';
+      }
+    }
+
+    async function approveRequest(id) {
+      try {
+        const token = await authManager.getIdToken();
+        const res = await fetch(`/api/admin/delivery-recovery/${id}/approve`, {
+          method: 'PUT',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const response = await res.json();
+        if (response.success) {
+          toast.success(response.message);
+          loadRecoveryRequests();
+          loadDeliveryStaff();
+        } else {
+          toast.error(response.message);
+        }
+      } catch (e) {
+        toast.error('حدث خطأ أثناء الموافقة على الطلب');
+      }
+    }
+
+    async function rejectRequest(id) {
+      try {
+        const token = await authManager.getIdToken();
+        const res = await fetch(`/api/admin/delivery-recovery/${id}/reject`, {
+          method: 'PUT',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const response = await res.json();
+        if (response.success) {
+          toast.success(response.message);
+          loadRecoveryRequests();
+        } else {
+          toast.error(response.message);
+        }
+      } catch (e) {
+        toast.error('حدث خطأ أثناء رفض الطلب');
+      }
+    }
+
+    // Event listener for updating password inside the credentials modal
+    document.getElementById('credentials-update-btn').addEventListener('click', async (e) => {
+      const id = e.currentTarget.dataset.id;
+      const newPassword = document.getElementById('credentials-new-password-input').value.trim();
+      
+      if (!newPassword) {
+        toast.error('يرجى إدخال كلمة المرور الجديدة');
+        return;
+      }
+      
+      const btn = e.currentTarget;
+      btn.disabled = true;
+      btn.textContent = 'جاري...';
+      
+      try {
+        const staff = window.currentStaffData.find(s => s.id == id);
+        const token = await authManager.getIdToken();
+        
+        const res = await fetch(`/api/admin/delivery/${id}`, {
+          method: 'PUT',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}` 
+          },
+          body: JSON.stringify({ 
+            name: staff.name, 
+            phone: staff.phone, 
+            email: staff.email, 
+            password: newPassword 
+          })
+        });
+        
+        const response = await res.json();
+        if (response.success) {
+          toast.success('تم تحديث كلمة المرور بنجاح');
+          document.getElementById('new-staff-password').textContent = newPassword;
+          document.getElementById('credentials-new-password-input').value = '';
+          
+          // تحديث الحالة المحلية فوراً لكي يظهر الباسورد الجديد مباشرة عند إعادة فتح النافذة
+          const staffIndex = window.currentStaffData.findIndex(s => s.id == id);
+          if (staffIndex !== -1) {
+            window.currentStaffData[staffIndex].password = newPassword;
+          }
+          
+          loadDeliveryStaff();
+        } else {
+          toast.error(response.message);
+        }
+      } catch (err) {
+        toast.error('حدث خطأ أثناء تحديث كلمة المرور');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'تحديث';
       }
     });
   </script>
