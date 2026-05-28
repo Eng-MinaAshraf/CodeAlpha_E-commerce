@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <script>
+    const tokens = Object.keys(localStorage).filter(k => k.startsWith('sb-') && k.endsWith('-auth-token'));
+    if (tokens.length === 0) window.location.replace('/pages/login.html');
+    else {
+      try {
+        const session = JSON.parse(localStorage.getItem(tokens[0]));
+        if (session?.user?.email !== 'admin@store.com') window.location.replace('/');
+      } catch(e) {}
+    }
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>العملاء | المتجر الإلكتروني</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/variables.css">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/pages/admin.css">
+
+  <style>
+    /* Alignment fix */
+    .admin-card-header {
+      margin-bottom: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .admin-card-title {
+      margin: 0 !important;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .admin-table-container {
+      margin-top: 0;
+    }
+    .admin-table th, .admin-table td {
+      vertical-align: middle;
+    }
+  </style>
+
+  <style>
+    /* Final alignment fix */
+    .admin-card-header {
+      margin-bottom: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .admin-card-title {
+      margin: 0 !important;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .admin-table-container {
+      margin-top: 0;
+    }
+  </style>
+</head>
+<body class="admin-body">
+  
+  <div class="admin-layout">
+    <!-- Sidebar -->
+    <aside class="admin-sidebar" id="admin-sidebar">
+      
+      
+      <div class="sidebar-header">
+        <a href="/pages/admin/dashboard.html" class="sidebar-brand">
+          <i class="fas fa-user-shield text-accent"></i>
+          <span>لوحة تحكم الإدارة</span>
+        </a>
+      </div>
+      <div class="sidebar-user">
+        <img src="" alt="صورة المدير" class="admin-avatar" id="sidebar-admin-avatar">
+        <div class="admin-user-info">
+          <span class="admin-name" id="sidebar-admin-name">المدير العام</span>
+          <span class="admin-role text-accent" id="sidebar-admin-email">admin@store.com</span>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="/pages/admin/dashboard.html" class="admin-nav-item">
+          <i class="fas fa-chart-line"></i> لوحة التحكم
+        </a>
+        <a href="/pages/admin/orders.html" class="admin-nav-item">
+          <i class="fas fa-shopping-bag"></i> إدارة الطلبات
+        </a>
+        <a href="/pages/admin/products.html" class="admin-nav-item">
+          <i class="fas fa-box-open"></i> إدارة المنتجات
+        </a>
+        <a href="/pages/admin/users.html" class="admin-nav-item active">
+          <i class="fas fa-users"></i> العملاء
+        </a>
+        <a href="/pages/admin/delivery.html" class="admin-nav-item">
+          <i class="fas fa-motorcycle"></i> فريق التوصيل
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <a href="/" class="admin-nav-item">
+          <i class="fas fa-external-link-alt"></i> عرض المتجر
+        </a>
+        <a href="#" id="admin-logout-btn" class="admin-nav-item text-error hover-bg-error hover-text-white">
+          <i class="fas fa-sign-out-alt"></i> تسجيل الخروج
+        </a>
+      </div>
+
+    </aside>
+
+    <main class="admin-main">
+      <header class="admin-header">
+        <button class="admin-menu-toggle" id="admin-menu-toggle">
+          <i class="fas fa-bars"></i>
+        </button>
+        <h1 class="admin-page-title">العملاء المسجلين</h1>
+      </header>
+
+      <div class="admin-content fade-in">
+        <div class="admin-card">
+          <div class="admin-card-header">
+            <h2 class="admin-card-title"><i class="fas fa-users text-accent ml-xs"></i> جميع العملاء</h2>
+          </div>
+          <div class="admin-table-container">
+            <table class="admin-table">
+              <thead>
+                  <tr>
+                    <th>العميل</th>
+                    <th>البريد الإلكتروني</th>
+                    <th>الهاتف</th>
+                    <th>العنوان</th>
+                    <th>تاريخ التسجيل</th>
+                  </tr>
+                </thead>
+              <tbody id="users-body">
+                <tr><td colspan="5" class="text-center py-xl"><div class="spinner"></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script type="module">
+    import { authManager } from '/js/auth.js';
+    import { toast } from '/js/toast.js';
+    import { formatDate } from '/js/utils.js';
+
+    authManager.onAuthChange(async (user) => {
+      if (!user || user.email !== 'admin@store.com') return;
+      
+      const adminAvatar = document.getElementById('sidebar-admin-avatar');
+      const avatarUrl = user.user_metadata?.avatar_url || user.user_metadata?.picture;
+      if (avatarUrl) {
+        adminAvatar.src = avatarUrl;
+      } else {
+        const displayName = user.user_metadata?.full_name || 'المدير';
+        adminAvatar.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=ff6b2b&color=fff&size=80`;
+      }
+      const adminName = document.getElementById('sidebar-admin-name');
+      if (user.user_metadata?.full_name || user.displayName) adminName.textContent = user.user_metadata?.full_name || user.displayName;
+      const adminEmail = document.getElementById('sidebar-admin-email');
+      if (user.email) adminEmail.textContent = user.email;
+
+      loadUsers();
+    });
+
+    document.getElementById('admin-menu-toggle').addEventListener('click', () => {
+      document.getElementById('admin-sidebar').classList.toggle('active');
+    });
+
+    document.getElementById('admin-logout-btn').addEventListener('click', async (e) => {
+      e.preventDefault();
+      await authManager.logout();
+
+    });
+
+    async function loadUsers() {
+      try {
+        const token = await authManager.getIdToken();
+        const res = await fetch('/api/admin/users', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const response = await res.json();
+        
+        const tbody = document.getElementById('users-body');
+        if (response.success) {
+          if (response.data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center text-secondary py-xl">لا توجد بيانات حالياً</td></tr>';
+          } else {
+            tbody.innerHTML = response.data.map(user => `
+              <tr>
+                <td>
+                  <strong>${user.name || 'مستخدم'}</strong>
+                  
+                </td>
+                <td><span class="text-secondary">${user.email || 'غير متوفر'}</span></td>
+                <td><span class="text-secondary">${user.phone || 'غير متوفر'}</span></td>
+                <td><span class="text-secondary">${user.address || 'غير متوفر'}</span></td>
+                <td><span class="text-secondary">${formatDate(user.created_at || new Date().toISOString())}</span></td>
+              </tr>
+            `).join('');
+          }
+        }
+      } catch (err) {
+        toast.error('حدث خطأ أثناء العملية');
+      }
+    }
+  </script>
+</body>
+</html>
+

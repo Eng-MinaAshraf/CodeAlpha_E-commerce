@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>الملف الشخصي | متجرنا</title>
+  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/variables.css">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <style>
+    .profile-container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: var(--space-xl) var(--space-md);
+    }
+    .profile-card {
+      background: var(--color-bg-card);
+      border-radius: var(--radius-lg);
+      padding: var(--space-2xl);
+      box-shadow: var(--shadow-md);
+      border: 1px solid var(--color-border);
+      position: relative;
+      overflow: hidden;
+    }
+    .profile-header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: var(--space-2xl);
+      border-bottom: 1px dashed var(--color-border);
+      padding-bottom: var(--space-xl);
+    }
+    .profile-avatar-wrapper {
+      position: relative;
+      margin-bottom: var(--space-md);
+    }
+    .profile-avatar {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 4px solid var(--color-bg-secondary);
+      box-shadow: 0 0 20px rgba(255, 107, 43, 0.3);
+    }
+    .profile-avatar-btn {
+      position: absolute;
+      bottom: 0;
+      right: 0;
+      background: var(--color-accent);
+      color: white;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border: 2px solid var(--color-bg-card);
+      transition: var(--transition-base);
+    }
+    .profile-avatar-btn:hover {
+      transform: scale(1.1);
+      background: var(--color-accent-hover);
+    }
+    .profile-info h1 {
+      font-size: 1.8rem;
+      margin-bottom: var(--space-xs);
+    }
+    .profile-info p {
+      color: var(--color-text-secondary);
+    }
+    .profile-section {
+      margin-bottom: var(--space-2xl);
+    }
+    .profile-section-title {
+      font-size: 1.2rem;
+      color: var(--color-accent);
+      margin-bottom: var(--space-md);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-lg);
+    }
+    @media (max-width: 600px) {
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Navbar will be injected via JS if we want, or hardcoded for speed -->
+  <nav class="navbar" id="main-navbar">
+    <div class="navbar-container container">
+      <a href="/" class="navbar-brand">🛍️ متجرنا</a>
+      <button class="navbar-menu-toggle" id="menu-toggle"><i class="fas fa-bars"></i></button>
+      <ul class="navbar-links" id="nav-links">
+        <li><a href="/">الرئيسية</a></li>
+        <li><a href="/pages/products.html">المنتجات</a></li>
+        <li><a href="/pages/cart.html" class="navbar-cart">
+          <i class="fas fa-shopping-cart"></i> السلة
+          <span class="navbar-cart-badge cart-count" id="cart-badge">0</span>
+        </a></li>
+        <li><a href="/pages/orders.html">طلباتي</a></li>
+      </ul>
+      <div class="navbar-user" id="navbar-user">
+        <div class="navbar-logged" id="navbar-logged" style="display:flex;">
+          <img src="" alt="الصورة" id="nav-user-photo" class="navbar-avatar">
+          <span id="nav-user-name">المستخدم</span>
+          <div class="navbar-dropdown">
+            <a href="/pages/profile.html" class="active"><i class="fas fa-user-circle"></i> ملفي الشخصي</a>
+            <a href="/pages/orders.html"><i class="fas fa-box"></i> طلباتي</a>
+            <a href="/pages/admin/dashboard.html" id="nav-admin-panel" style="display:none;"><i class="fas fa-user-shield"></i> لوحة الإدارة</a>
+            <a href="#" id="nav-logout-btn"><i class="fas fa-sign-out-alt text-error"></i> تسجيل الخروج</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main class="profile-container fade-in">
+    <div class="profile-card">
+      <div class="profile-header">
+        <div class="profile-avatar-wrapper">
+          <img src="https://ui-avatars.com/api/?name=User&background=ff6b2b&color=fff&size=120" id="avatar-preview" class="profile-avatar">
+          <label for="avatar-upload" class="profile-avatar-btn" title="تغيير الصورة">
+            <i class="fas fa-camera"></i>
+          </label>
+          <input type="file" id="avatar-upload" accept="image/*" hidden>
+        </div>
+        <div class="profile-info text-center">
+          <h1 id="display-name">جاري التحميل...</h1>
+          <p id="display-email">...</p>
+        </div>
+      </div>
+
+      <form id="profile-form">
+        <div class="profile-section">
+          <h2 class="profile-section-title"><i class="fas fa-id-card"></i> البيانات الشخصية</h2>
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label">الاسم بالكامل</label>
+              <input type="text" id="name" class="form-input" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">رقم الهاتف</label>
+              <input type="tel" id="phone" class="form-input" placeholder="مثال: 01000000000">
+            </div>
+          </div>
+          <div class="form-group mt-md">
+            <label class="form-label">عنوان التوصيل الافتراضي</label>
+            <textarea id="address" class="form-textarea" rows="2" placeholder="المدينة، الحي، الشارع..."></textarea>
+          </div>
+        </div>
+
+        <div class="profile-section">
+          <h2 class="profile-section-title"><i class="fas fa-lock"></i> الأمان (اختياري)</h2>
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label">كلمة المرور الجديدة</label>
+              <input type="password" id="new-password" class="form-input" placeholder="اتركه فارغاً إذا لم ترد تغييره">
+            </div>
+          </div>
+        </div>
+
+        <div class="text-left mt-xl">
+          <button type="submit" class="btn btn-primary btn-lg" id="save-btn" style="min-width: 200px;">
+            <i class="fas fa-save mr-xs"></i> حفظ التعديلات
+          </button>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <div class="toast-container" id="toast-container"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script type="module">
+    import { authManager } from '/js/auth.js';
+    import { toast } from '/js/toast.js';
+    import { cartManager } from '/js/cart.js';
+    import { supabase } from '/js/supabase.js';
+
+    let currentAvatarUrl = null;
+
+    authManager.onAuthChange(async (user) => {
+      if (!user) {
+        window.location.replace('/pages/login.html');
+        return;
+      }
+
+      // جلب تفاصيل البروفايل من السيرفر
+      try {
+        const token = await authManager.getIdToken();
+        const res = await fetch('/api/auth/profile', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const response = await res.json();
+        
+        if (response.success) {
+          const profile = response.data;
+          
+          document.getElementById('name').value = profile.name || profile.user_metadata?.full_name || '';
+          document.getElementById('display-name').textContent = profile.name || profile.user_metadata?.full_name || profile.email.split('@')[0];
+          document.getElementById('display-email').textContent = profile.email;
+          document.getElementById('phone').value = profile.phone || '';
+          document.getElementById('address').value = profile.address || '';
+          
+          currentAvatarUrl = profile.avatar_url || profile.user_metadata?.avatar_url;
+          if (currentAvatarUrl) {
+            document.getElementById('avatar-preview').src = currentAvatarUrl;
+          } else {
+            document.getElementById('avatar-preview').src = `https://ui-avatars.com/api/?name=${profile.email}&background=ff6b2b&color=fff&size=120`;
+          }
+
+          // Handle incomplete profile check
+          const urlParams = new URLSearchParams(window.location.search);
+          if (urlParams.get('incomplete') === 'true') {
+            toast.info('مرحباً بك! يرجى إكمال بياناتك الأساسية (الاسم، الهاتف، العنوان) للمتابعة وتجربة تسوق أفضل.', 15000);
+            
+            // Hide navigation links so they must fill the form
+            const navLinks = document.getElementById('nav-links');
+            if (navLinks) navLinks.style.display = 'none';
+            
+            const navDropdown = document.querySelector('.navbar-dropdown');
+            if (navDropdown) navDropdown.style.display = 'none';
+            
+            const menuToggle = document.getElementById('menu-toggle');
+            if (menuToggle) menuToggle.style.display = 'none';
+            
+            // Disable cart link
+            const cartLink = document.querySelector('.navbar-cart');
+            if (cartLink) cartLink.style.display = 'none';
+            
+            // Remove home link from logo
+            const navBrand = document.querySelector('.navbar-brand');
+            if (navBrand) navBrand.href = 'javascript:void(0)';
+          }
+        }
+      } catch (err) {
+        toast.error('حدث خطأ أثناء جلب البيانات');
+      }
+    });
+
+    // رفع صورة البروفايل
+    const avatarUpload = document.getElementById('avatar-upload');
+    avatarUpload.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      if (file.size > 2 * 1024 * 1024) {
+        toast.error('حجم الصورة يجب أن لا يتعدى 2 ميجابايت');
+        return;
+      }
+
+      toast.info('جاري رفع الصورة...');
+      const formData = new FormData();
+      formData.append('image', file);
+
+      try {
+        const token = await authManager.getIdToken();
+        const res = await fetch('/api/auth/upload-avatar', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` },
+          body: formData
+        });
+        const response = await res.json();
+        
+        if (response.success) {
+          currentAvatarUrl = response.url;
+          document.getElementById('avatar-preview').src = currentAvatarUrl;
+          document.getElementById('nav-user-photo').src = currentAvatarUrl;
+          toast.success('تم رفع الصورة مؤقتاً، اضغط حفظ لتأكيد التغيير');
+        } else {
+          toast.error(response.message);
+        }
+      } catch (err) {
+        toast.error('حدث خطأ أثناء رفع الصورة');
+      }
+    });
+
+    // حفظ البيانات
+    const form = document.getElementById('profile-form');
+    const saveBtn = document.getElementById('save-btn');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const name = document.getElementById('name').value.trim();
+      const phone = document.getElementById('phone').value.trim();
+      const address = document.getElementById('address').value.trim();
+      const newPassword = document.getElementById('new-password').value;
+
+      const originalText = saveBtn.innerHTML;
+      saveBtn.innerHTML = '<span class="spinner" style="width:20px;height:20px;border-width:2px;display:inline-block"></span> جاري الحفظ...';
+      saveBtn.disabled = true;
+
+      try {
+        const token = await authManager.getIdToken();
+        
+        // 1. تحديث الملف الشخصي في قاعدة البيانات
+        const res = await fetch('/api/auth/profile', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ name, phone, address })
+        });
+        const response = await res.json();
+        
+        if (!response.success) throw new Error(response.message);
+
+        // 2. تحديث البيانات الوصفية (الاسم والصورة) مباشرة عبر المصادقة
+        const { error: metaError } = await supabase.auth.updateUser({
+          data: { full_name: name, avatar_url: currentAvatarUrl }
+        });
+        if (metaError) throw metaError;
+
+        // 3. تحديث الرقم السري إذا تم إدخاله
+        if (newPassword) {
+          if (newPassword.length < 6) {
+            throw new Error('كلمة المرور يجب أن تكون 6 أحرف على الأقل');
+          }
+          const { error } = await supabase.auth.updateUser({ password: newPassword });
+          if (error) throw error;
+          document.getElementById('new-password').value = '';
+        }
+
+        toast.success('تم حفظ التعديلات بنجاح');
+        document.getElementById('display-name').textContent = name;
+        document.getElementById('nav-user-name').textContent = name;
+        
+        // Restore navigation if it was blocked
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('incomplete') === 'true') {
+          window.history.replaceState({}, document.title, '/pages/profile.html');
+          
+          const navLinks = document.getElementById('nav-links');
+          if (navLinks) navLinks.style.display = '';
+          
+          const navDropdown = document.querySelector('.navbar-dropdown');
+          if (navDropdown) navDropdown.style.display = '';
+          
+          const menuToggle = document.getElementById('menu-toggle');
+          if (menuToggle) menuToggle.style.display = '';
+          
+          const cartLink = document.querySelector('.navbar-cart');
+          if (cartLink) cartLink.style.display = '';
+          
+          const navBrand = document.querySelector('.navbar-brand');
+          if (navBrand) navBrand.href = '/';
+          
+          toast.success('شكراً لك! حسابك جاهز الآن لتجربة التسوق.');
+        }
+        
+      } catch (err) {
+        toast.error(err.message || 'حدث خطأ أثناء حفظ البيانات');
+      } finally {
+        saveBtn.innerHTML = originalText;
+        saveBtn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

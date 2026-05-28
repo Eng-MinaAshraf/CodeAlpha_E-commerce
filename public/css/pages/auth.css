@@ -1,0 +1,147 @@
+.auth-container {
+  min-height: calc(100vh - 80px); /* minus navbar */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-xl) var(--space-md);
+  background: radial-gradient(circle at top right, var(--color-bg-secondary), var(--color-bg-primary));
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 440px;
+  padding: var(--space-2xl);
+  margin: auto;
+}
+
+.auth-title {
+  text-align: center;
+  color: var(--color-accent);
+  margin-bottom: var(--space-xl);
+}
+
+.auth-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: var(--space-lg) 0;
+  color: var(--color-text-muted);
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.auth-divider:not(:empty)::before { margin-left: var(--space-md); }
+.auth-divider:not(:empty)::after { margin-right: var(--space-md); }
+
+.social-buttons {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-md);
+}
+
+.social-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-bg-input);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-lg);
+  border: 1px solid var(--color-border);
+  transition: all var(--transition-fast);
+  cursor: pointer;
+}
+
+.social-btn:hover {
+  background: var(--color-accent);
+  color: white;
+  border-color: var(--color-accent);
+  transform: translateY(-2px);
+}
+
+.auth-footer {
+  text-align: center;
+  margin-top: var(--space-xl);
+  color: var(--color-text-secondary);
+}
+
+.auth-footer a {
+  color: var(--color-accent);
+  font-weight: 600;
+}
+
+.password-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-input-wrapper .form-input {
+  width: 100%;
+  padding-left: 2.5rem; /* Space for the icon in RTL */
+}
+
+.auth-toggle-password {
+  position: absolute;
+  left: 10px; /* Left side for RTL */
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: var(--space-xs);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.auth-toggle-password:hover {
+  color: var(--color-text-primary);
+}
+
+.password-strength {
+  height: 4px;
+  background: var(--color-bg-input);
+  border-radius: var(--radius-full);
+  margin-top: var(--space-sm);
+  overflow: hidden;
+  width: 100%;
+}
+
+.password-strength-bar {
+  height: 100%;
+  width: 0;
+  transition: width 0.3s ease, background-color 0.3s ease;
+}
+
+.strength-weak { background-color: var(--color-error); width: 33.33%; }
+.strength-medium { background-color: var(--color-warning); width: 66.66%; }
+.strength-strong { background-color: var(--color-success); width: 100%; }
+
+.password-strength-text {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  margin-top: var(--space-xs);
+  display: block;
+}
+
+.checkbox-group {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-md);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.checkbox-group input[type="checkbox"] {
+  accent-color: var(--color-accent);
+  width: 16px;
+  height: 16px;
+}

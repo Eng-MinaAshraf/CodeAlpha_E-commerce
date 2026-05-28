@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>متجرنا | الصفحة الرئيسية</title>
+  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/variables.css">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/pages/home.css">
+</head>
+<body>
+  <!-- Shared Navbar -->
+  <nav class="navbar" id="main-navbar">
+    <div class="navbar-container container">
+      <a href="/" class="navbar-brand">🛍️ متجرنا</a>
+      <button class="navbar-menu-toggle" id="menu-toggle" aria-label="القائمة">
+        <i class="fas fa-bars"></i>
+      </button>
+      <ul class="navbar-links" id="nav-links">
+        <li><a href="/" class="active">الرئيسية</a></li>
+        <li><a href="/pages/products.html">المنتجات</a></li>
+        <li><a href="/pages/cart.html" class="navbar-cart">
+          <i class="fas fa-shopping-cart"></i> السلة
+          <span class="navbar-cart-badge cart-count" id="cart-badge">0</span>
+        </a></li>
+        <li><a href="/pages/orders.html">طلباتي</a></li>
+      </ul>
+      <div class="navbar-user" id="navbar-user">
+        <div class="navbar-guest" id="navbar-guest">
+          <a href="/pages/login.html" class="btn btn-outline btn-sm">تسجيل الدخول</a>
+          <a href="/pages/signup.html" class="btn btn-primary btn-sm">حساب جديد</a>
+        </div>
+        <div class="navbar-logged" id="navbar-logged" style="display:none;">
+          <img src="https://ui-avatars.com/api/?name=User&background=ff6b2b&color=fff&size=36" alt="الصورة" id="nav-user-photo" class="navbar-avatar">
+          <span id="nav-user-name">المستخدم</span>
+          <div class="navbar-dropdown">
+            <a href="/pages/profile.html"><i class="fas fa-user-circle"></i> ملفي الشخصي</a>
+            <a href="/pages/orders.html"><i class="fas fa-box"></i> طلباتي</a>
+            <a href="/pages/admin/dashboard.html" id="nav-admin-panel" style="display:none;"><i class="fas fa-user-shield"></i> لوحة الإدارة</a>
+            <a href="#" id="nav-logout-btn"><i class="fas fa-sign-out-alt text-error"></i> تسجيل الخروج</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-content fade-in">
+      <h1 class="hero-title">مرحباً بك في متجرنا</h1>
+      <p class="hero-subtitle">اكتشف أفضل المنتجات بأسعار مميزة وجودة لا تضاهى</p>
+      <div class="hero-cta">
+        <a href="/pages/products.html" class="btn btn-primary btn-lg">تسوق الآن</a>
+        <a href="#categories" class="btn btn-outline btn-lg">تصفح الفئات</a>
+      </div>
+    </div>
+  </section>
+
+  <div class="container section">
+    <!-- Categories -->
+    <section id="categories" class="mb-3xl">
+      <h2 class="text-center mb-xl">تسوق حسب الفئة</h2>
+      <div class="categories-grid">
+        <a href="/pages/products.html?category=إلكترونيات" class="category-card cat-electronics">
+          <i class="fas fa-laptop category-icon"></i>
+          <span class="category-title">إلكترونيات</span>
+        </a>
+        <a href="/pages/products.html?category=ملابس" class="category-card cat-clothing">
+          <i class="fas fa-shirt category-icon"></i>
+          <span class="category-title">ملابس</span>
+        </a>
+        <a href="/pages/products.html?category=كتب" class="category-card cat-books">
+          <i class="fas fa-book category-icon"></i>
+          <span class="category-title">كتب</span>
+        </a>
+        <a href="/pages/products.html?category=أثاث" class="category-card cat-furniture">
+          <i class="fas fa-couch category-icon"></i>
+          <span class="category-title">أثاث</span>
+        </a>
+      </div>
+    </section>
+
+    <!-- Featured Products -->
+    <section class="featured-section">
+      <div class="flex-between mb-xl">
+        <h2>أحدث المنتجات</h2>
+        <a href="/pages/products.html" class="btn btn-ghost">عرض الكل <i class="fas fa-arrow-left mr-sm"></i></a>
+      </div>
+      <div id="featured-products" class="grid-products">
+        <!-- Will be populated by JS -->
+      </div>
+    </section>
+
+    <!-- Features -->
+    <section class="section">
+      <h2 class="text-center mb-xl">لماذا تتسوق معنا؟</h2>
+      <div class="features-grid">
+        <div class="feature-card">
+          <i class="fas fa-truck feature-icon"></i>
+          <h3 class="feature-title">شحن سريع</h3>
+          <p class="feature-text">توصيل لباب بيتك في أسرع وقت مع أفضل شركات الشحن</p>
+        </div>
+        <div class="feature-card">
+          <i class="fas fa-lock feature-icon"></i>
+          <h3 class="feature-title">دفع آمن</h3>
+          <p class="feature-text">جميع معاملاتك محمية ومشفرة لضمان أقصى درجات الأمان</p>
+        </div>
+        <div class="feature-card">
+          <i class="fas fa-headset feature-icon"></i>
+          <h3 class="feature-title">دعم متواصل</h3>
+          <p class="feature-text">فريق الدعم الفني متاح على مدار الساعة للإجابة على استفساراتك</p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <span class="footer-brand">🛍️ متجرنا</span>
+          <p class="footer-desc">وجهتك الأولى للتسوق الإلكتروني بأسعار منافسة وجودة عالية.</p>
+        </div>
+        <div>
+          <h4 class="footer-title">روابط سريعة</h4>
+          <ul class="footer-links">
+            <li><a href="/">الرئيسية</a></li>
+            <li><a href="/pages/products.html">المنتجات</a></li>
+            <li><a href="/pages/orders.html">طلباتي</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4 class="footer-title">تواصل معنا</h4>
+          <ul class="footer-links">
+            <li><i class="fas fa-envelope ml-xs"></i> support@store.com</li>
+            <li><i class="fas fa-phone ml-xs"></i> +20 123 456 7890</li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>© 2026 متجرنا - جميع الحقوق محفوظة</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script>
+    document.getElementById('menu-toggle')?.addEventListener('click', () => {
+      document.getElementById('nav-links')?.classList.toggle('active');
+    });
+  </script>
+  <script type="module">
+    import { api } from '/js/api.js';
+    import { formatPrice, truncateText, createSkeletonCards, translateCategory } from '/js/utils.js';
+    import { cartManager } from '/js/cart.js';
+    import { toast } from '/js/toast.js';
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const container = document.getElementById('featured-products');
+      
+      // Show skeleton
+      container.innerHTML = createSkeletonCards(4);
+
+      try {
+        const response = await api.products.getAll({ limit: 4, sort: 'newest' });
+        const products = response.data.products || [];
+        
+        if (response.success && products.length > 0) {
+          container.innerHTML = '';
+          products.forEach(product => {
+            const card = document.createElement('div');
+            card.className = 'product-card card card-hover fade-in';
+            card.innerHTML = `
+              <div class="product-card-image" style="cursor: pointer" onclick="location.href='/pages/product-details.html?id=${product.id}'">
+                <img src="${product.image}" alt="${product.name}" loading="lazy">
+              </div>
+              <div class="product-card-body">
+                <span class="badge badge-outline product-card-category">${translateCategory(product.category)}</span>
+                <h3 class="product-card-title" style="cursor: pointer" onclick="location.href='/pages/product-details.html?id=${product.id}'">${product.name}</h3>
+                <p class="product-card-desc">${truncateText(product.description, 60)}</p>
+                <div class="product-card-footer">
+                  <span class="product-card-price">${formatPrice(product.price)}</span>
+                  <button class="btn btn-primary btn-sm add-to-cart-btn" 
+                          data-id="${product.id}" 
+                          data-name="${product.name}" 
+                          data-price="${product.price}" 
+                          data-image="${product.image}">
+                    <i class="fas fa-cart-plus"></i> أضف للسلة
+                  </button>
+                </div>
+              </div>
+            `;
+            container.appendChild(card);
+          });
+
+          // Attach add to cart events
+          document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+              e.stopPropagation(); // prevent card click
+              const item = {
+                id: btn.dataset.id,
+                name: btn.dataset.name,
+                price: parseFloat(btn.dataset.price),
+                image: btn.dataset.image,
+                quantity: 1
+              };
+              await cartManager.addItem(item);
+            });
+          });
+        } else {
+          container.innerHTML = '<p class="text-center w-full">لا توجد منتجات لعرضها.</p>';
+        }
+      } catch (error) {
+        container.innerHTML = '<p class="text-center text-error w-full">حدث خطأ أثناء تحميل المنتجات.</p>';
+      }
+    });
+  </script>
+</body>
+</html>

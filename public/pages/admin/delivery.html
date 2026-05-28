@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <script>
+    const tokens = Object.keys(localStorage).filter(k => k.startsWith('sb-') && k.endsWith('-auth-token'));
+    if (tokens.length === 0) window.location.replace('/pages/login.html');
+    else {
+      try {
+        const session = JSON.parse(localStorage.getItem(tokens[0]));
+        if (session?.user?.email !== 'admin@store.com') window.location.replace('/');
+      } catch(e) {}
+    }
+
+    // Copy buttons logic
+    document.addEventListener('click', (e) => {
+      const copyBtn = e.target.closest('.copy-btn');
+      if (!copyBtn) return;
+      const targetId = copyBtn.dataset.target;
+      const text = document.getElementById(targetId)?.textContent;
+      if (text) {
+        navigator.clipboard.writeText(text).then(() => {
+          const icon = copyBtn.querySelector('i');
+          icon.className = 'fas fa-check text-success';
+          setTimeout(() => { icon.className = 'fas fa-copy'; }, 1500);
+          toast.success('تم النسخ!');
+        });
+      }
+    });
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>فريق التوصيل | المتجر الإلكتروني</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/variables.css">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/pages/admin.css">
+
+  <style>
+    /* Alignment fix */
+    .admin-card-header {
+      margin-bottom: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .admin-card-title {
+      margin: 0 !important;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .admin-table-container {
+      margin-top: 0;
+    }
+    .admin-table th, .admin-table td {
+      vertical-align: middle;
+    }
+  </style>
+
+  <style>
+    /* Final alignment fix */
+    .admin-card-header {
+      margin-bottom: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .admin-card-title {
+      margin: 0 !important;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .admin-table-container {
+      margin-top: 0;
+    }
+  </style>
+</head>
+<body class="admin-body">
+  
+  <div class="admin-layout">
+    <!-- Sidebar (Same as dashboard) -->
+    <aside class="admin-sidebar" id="admin-sidebar">
+      
+      
+      <div class="sidebar-header">
+        <a href="/pages/admin/dashboard.html" class="sidebar-brand">
+          <i class="fas fa-user-shield text-accent"></i>
+          <span>لوحة تحكم الإدارة</span>
+        </a>
+      </div>
+      <div class="sidebar-user">
+        <img src="" alt="صورة المدير" class="admin-avatar" id="sidebar-admin-avatar">
+        <div class="admin-user-info">
+          <span class="admin-name" id="sidebar-admin-name">المدير العام</span>
+          <span class="admin-role text-accent" id="sidebar-admin-email">admin@store.com</span>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="/pages/admin/dashboard.html" class="admin-nav-item">
+          <i class="fas fa-chart-line"></i> لوحة التحكم
+        </a>
+        <a href="/pages/admin/orders.html" class="admin-nav-item">
+          <i class="fas fa-shopping-bag"></i> إدارة الطلبات
+        </a>
+        <a href="/pages/admin/products.html" class="admin-nav-item">
+          <i class="fas fa-box-open"></i> إدارة المنتجات
+        </a>
+        <a href="/pages/admin/users.html" class="admin-nav-item">
+          <i class="fas fa-users"></i> العملاء
+        </a>
+        <a href="/pages/admin/delivery.html" class="admin-nav-item active">
+          <i class="fas fa-motorcycle"></i> فريق التوصيل
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <a href="/" class="admin-nav-item">
+          <i class="fas fa-external-link-alt"></i> عرض المتجر
+        </a>
+        <a href="#" id="admin-logout-btn" class="admin-nav-item text-error hover-bg-error hover-text-white">
+          <i class="fas fa-sign-out-alt"></i> تسجيل الخروج
+        </a>
+      </div>
+
+    </aside>
+
+    <main class="admin-main">
+      <header class="admin-header">
+        <button class="admin-menu-toggle" id="admin-menu-toggle">
+          <i class="fas fa-bars"></i>
+        </button>
+        <h1 class="admin-page-title">فريق التوصيل</h1>
+        <div class="admin-header-actions">
+          <button class="btn btn-primary" onclick="document.getElementById('add-delivery-modal').classList.add('active')">
+        <i class="fas fa-plus"></i> إضافة مندوب جديد
+          </button>
+        </div>
+      </header>
+
+      <div class="admin-content fade-in">
+        <div class="admin-card">
+          <div class="admin-card-header">
+            <h2 class="admin-card-title"><i class="fas fa-motorcycle text-accent ml-xs"></i> قائمة الموظفين</h2>
+          </div>
+          <div class="admin-table-container">
+            <table class="admin-table">
+              <thead>
+                  <tr>
+                    <th>الاسم</th>
+                    <th>البريد الإلكتروني</th>
+                    <th>الهاتف</th>
+                    <th>تاريخ الإضافة</th>
+                    <th>الإجراءات</th>
+                  </tr>
+                </thead>
+              <tbody id="delivery-staff-body">
+                <tr><td colspan="5" class="text-center py-xl"><div class="spinner"></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  
+
+  <!-- Add Delivery Staff Modal -->
+  <div class="modal-overlay" id="add-delivery-modal">
+    <div class="modal-content admin-card">
+      <div class="modal-header">
+        <h2></h2>
+        <button class="modal-close" onclick="document.getElementById('add-delivery-modal').classList.remove('active')">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <form id="add-delivery-form">
+        <div class="form-group">
+          <label class="form-label" for="del-name">اسم الموظف</label>
+          <input type="text" id="staff-name" class="form-input" placeholder="بحث..." required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="del-phone">رقم الهاتف</label>
+          <input type="tel" id="staff-phone" class="form-input" placeholder="بحث..." required>
+        <p class="text-sm text-secondary mt-xs"><i class="fas fa-info-circle"></i> أدخل بيانات مندوب التوصيل لإسناد الطلبات إليه.</p>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block mt-lg" id="submit-staff-btn">
+          إضافة المندوب لفريق التوصيل
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Edit Delivery Staff Modal -->
+  <div class="modal-overlay" id="edit-delivery-modal">
+    <div class="modal-content admin-card">
+      <div class="modal-header">
+        <h2><i class="fas fa-edit text-accent"></i> تعديل بيانات المندوب</h2>
+        <button class="modal-close" onclick="document.getElementById('edit-delivery-modal').classList.remove('active')">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <form id="edit-delivery-form">
+        <input type="hidden" id="edit-staff-id">
+        <div class="form-group">
+          <label class="form-label" for="edit-del-name">اسم الموظف</label>
+          <input type="text" id="edit-staff-name" class="form-input" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="edit-del-phone">رقم الهاتف</label>
+          <input type="tel" id="edit-staff-phone" class="form-input" required>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block mt-lg" id="edit-submit-staff-btn">
+          حفظ التعديلات
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Credentials Result Modal -->
+  <div class="modal-overlay" id="credentials-modal">
+    <div class="modal-content admin-card text-center">
+      <div class="modal-header border-none mb-0">
+        <button class="modal-close" onclick="document.getElementById('credentials-modal').classList.remove('active')">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="text-success text-5xl mb-md">
+        <i class="fas fa-check-circle"></i>
+      </div>
+      <h2 class="mb-md">تم إضافة المندوب بنجاح!</h2>
+      <p class="text-secondary mb-lg">تم إنشاء حساب المندوب. يرجى نسخ البيانات التالية وإرسالها للمندوب.</p>
+      
+      <div class="bg-input radius-md p-md mb-lg text-right" style="border: 1px solid var(--border-color)">
+        <div class="mb-sm">
+                    <span class="text-secondary" style="font-size:0.8rem;">بيانات التسجيل:</span>
+          <br>
+          <strong class="text-primary text-lg" id="new-staff-email" style="user-select: all;"></strong>
+        </div>
+        <div>
+                    <span class="text-secondary" style="font-size:0.8rem;">بيانات التسجيل:</span>
+          <br>
+          <strong class="text-accent text-lg" id="new-staff-password" style="user-select: all;"></strong>
+        </div>
+      </div>
+      
+      <button class="btn btn-primary btn-block" onclick="document.getElementById('credentials-modal').classList.remove('active')">
+                <i class="fas fa-check ml-xs"></i> تم الحفظ
+      </button>
+    </div>
+  </div>
+
+  <script type="module">
+    import { authManager } from '/js/auth.js';
+    import { toast } from '/js/toast.js';
+    import { formatDate, customConfirm } from '/js/utils.js';
+
+    authManager.onAuthChange(async (user) => {
+      if (!user || user.email !== 'admin@store.com') {
+
+        return;
+      }
+      // تحديث صورة المدير في الـ sidebar
+      const adminAvatar = document.getElementById('sidebar-admin-avatar');
+      const avatarUrl = user.user_metadata?.avatar_url || user.user_metadata?.picture;
+      if (avatarUrl) {
+        adminAvatar.src = avatarUrl;
+      } else {
+        const displayName = user.user_metadata?.full_name || 'المدير';
+        adminAvatar.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=ff6b2b&color=fff&size=80`;
+      }
+      const adminName = document.getElementById('sidebar-admin-name');
+      if (user.user_metadata?.full_name || user.displayName) adminName.textContent = user.user_metadata?.full_name || user.displayName;
+      const adminEmail = document.getElementById('sidebar-admin-email');
+      if (user.email) adminEmail.textContent = user.email;
+      loadDeliveryStaff();
+    });
+
+    document.getElementById('admin-menu-toggle').addEventListener('click', () => {
+      document.getElementById('admin-sidebar').classList.toggle('active');
+    });
+
+    document.getElementById('admin-logout-btn').addEventListener('click', async (e) => {
+      e.preventDefault();
+      await authManager.logout();
+
+    });
+
+    async function loadDeliveryStaff() {
+      try {
+        const token = await authManager.getIdToken();
+        const res = await fetch('/api/admin/delivery', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const response = await res.json();
+        
+        const tbody = document.getElementById('delivery-staff-body');
+        if (response.success) {
+          window.currentStaffData = response.data; // Store for edit modal
+          if (response.data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center text-secondary py-xl">لا توجد بيانات حالياً</td></tr>';
+          } else {
+            tbody.innerHTML = response.data.map(staff => `
+              <tr>
+                <td><strong>${staff.name}</strong></td>
+                <td><span class="text-secondary">${staff.email}</span></td>
+                <td><span class="text-secondary">${staff.phone || 'غير متوفر'}</span></td>
+                <td><span class="text-secondary">${formatDate(staff.created_at)}</span></td>
+                <td>
+                  <div style="display: flex; gap: 8px;">
+                    <button class="btn btn-outline btn-sm hover-bg-success hover-text-white border-success text-success edit-btn" data-id="${staff.id}">
+                      <i class="fas fa-edit"></i> تعديل
+                    </button>
+                    <button class="btn btn-outline btn-sm hover-bg-error hover-text-white border-error text-error delete-btn" data-id="${staff.id}">
+                      <i class="fas fa-trash"></i> حذف
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            `).join('');
+
+            
+    // View Credentials Event
+    document.querySelectorAll('.view-cred-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const id = e.currentTarget.dataset.id;
+        const staff = window.currentStaffData.find(s => s.id == id);
+        if (staff) {
+          document.getElementById('new-staff-email').textContent = staff.email;
+          document.getElementById('new-staff-password').textContent = staff.password;
+          document.getElementById('credentials-modal').classList.add('active');
+        }
+      });
+    });
+
+            // Attach edit events
+            document.querySelectorAll('.edit-btn').forEach(btn => {
+              btn.addEventListener('click', (e) => {
+                const id = e.currentTarget.dataset.id;
+                const staff = window.currentStaffData.find(s => s.id == id);
+                if (staff) openEditModal(staff);
+              });
+            });
+
+            // Attach delete events
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+              btn.addEventListener('click', (e) => {
+                const id = e.currentTarget.dataset.id;
+                customConfirm('تأكيد الحذف', 'هل أنت متأكد من رغبتك في حذف هذا المندوب؟ لا يمكن التراجع.', async () => {
+                  deleteStaff(id);
+                });
+              });
+            });
+          }
+        }
+      } catch (err) {
+        toast.error('حدث خطأ أثناء العملية');
+        document.getElementById('delivery-staff-body').innerHTML = '<tr><td colspan="5" class="text-center text-error py-xl">حدث خطأ في تحميل البيانات</td></tr>';
+      }
+    }
+
+    async function deleteStaff(id) {
+      try {
+        const token = await authManager.getIdToken();
+        const res = await fetch(`/api/admin/delivery/${id}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const response = await res.json();
+        if(response.success) {
+          toast.success('تمت العملية بنجاح');
+          loadDeliveryStaff();
+        } else {
+          toast.error(response.message);
+        }
+      } catch(e) {
+        toast.error('حدث خطأ أثناء العملية');
+      }
+    }
+
+    document.getElementById('add-delivery-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('submit-staff-btn');
+      btn.classList.add('btn-loading');
+      btn.disabled = true;
+
+      try {
+        const name = document.getElementById('staff-name').value.trim();
+      if (/[\u0600-\u06FF]/.test(name)) {
+        toast.error('لا يسمح بإدخال الاسم باللغة العربية (يرجى كتابة الاسم بالإنجليزية)');
+        btn.classList.remove('btn-loading');
+        btn.disabled = false;
+        return;
+      }
+
+        const phone = document.getElementById('staff-phone').value.trim();
+        const token = await authManager.getIdToken();
+        
+        const res = await fetch('/api/admin/delivery', {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}` 
+          },
+          body: JSON.stringify({ name, phone, email, password })
+        });
+        const response = await res.json();
+        
+        if (response.success) {
+          document.getElementById('add-delivery-modal').classList.remove('active');
+          document.getElementById('add-delivery-form').reset();
+          
+          // Show credentials
+          document.getElementById('new-staff-email').textContent = response.data.email;
+          document.getElementById('new-staff-password').textContent = response.data.password;
+          document.getElementById('credentials-modal').classList.add('active');
+          
+          loadDeliveryStaff();
+        } else {
+          toast.error(response.message);
+        }
+      } catch (err) {
+        toast.error('حدث خطأ أثناء العملية');
+      } finally {
+        btn.classList.remove('btn-loading');
+        btn.disabled = false;
+      }
+    });
+    // Edit Staff Logic
+    function openEditModal(staff) {
+      document.getElementById('edit-staff-id').value = staff.id;
+      document.getElementById('edit-staff-name').value = staff.name;
+      document.getElementById('edit-staff-phone').value = staff.phone || '';
+      document.getElementById('edit-staff-email').value = staff.email || '';
+      document.getElementById('edit-staff-password').value = staff.password || '';
+      document.getElementById('edit-delivery-modal').classList.add('active');
+    }
+
+    document.getElementById('edit-delivery-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('edit-staff-id').value;
+      const name = document.getElementById('edit-staff-name').value;
+      const phone = document.getElementById('edit-staff-phone').value;
+      const email = document.getElementById('edit-staff-email').value;
+      const password = document.getElementById('edit-staff-password').value;
+      if (/[\u0600-\u06FF]/.test(name)) {
+        toast.error('لا يسمح بإدخال الاسم باللغة العربية');
+        return;
+      }
+
+      const btn = document.getElementById('edit-submit-staff-btn');
+      btn.disabled = true;
+      btn.innerHTML = '<div class="spinner spinner-sm"></div> جاري المعالجة...';
+
+      try {
+        const token = await authManager.getIdToken();
+        const res = await fetch(`/api/admin/delivery/${id}`, {
+          method: 'PUT',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}` 
+          },
+          body: JSON.stringify({ name, phone })
+        });
+        const response = await res.json();
+        
+        if (response.success) {
+          toast.success('تمت العملية بنجاح');
+          document.getElementById('edit-delivery-modal').classList.remove('active');
+          loadDeliveryStaff();
+        } else {
+          toast.error(response.message);
+        }
+      } catch (err) {
+        console.error("Edit Staff Error:", err);
+        toast.error('حدث خطأ: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerText = 'حفظ التعديلات';
+      }
+    });
+  </script>
+</body>
+</html>
+

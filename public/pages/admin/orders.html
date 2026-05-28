@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <script>
+    const tokens = Object.keys(localStorage).filter(k => k.startsWith('sb-') && k.endsWith('-auth-token'));
+    if (tokens.length === 0) window.location.replace('/pages/login.html');
+    else {
+      try {
+        const session = JSON.parse(localStorage.getItem(tokens[0]));
+        if (session?.user?.email !== 'admin@store.com') window.location.replace('/');
+      } catch(e) {}
+    }
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>إدارة الطلبات | المتجر الإلكتروني</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/variables.css">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/pages/admin.css">
+
+  <style>
+    /* Alignment fix */
+    .admin-card-header {
+      margin-bottom: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .admin-card-title {
+      margin: 0 !important;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .admin-table-container {
+      margin-top: 0;
+    }
+    .admin-table th, .admin-table td {
+      vertical-align: middle;
+    }
+  </style>
+
+  <style>
+    /* Final alignment fix */
+    .admin-card-header {
+      margin-bottom: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .admin-card-title {
+      margin: 0 !important;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .admin-table-container {
+      margin-top: 0;
+    }
+  </style>
+</head>
+<body class="admin-body">
+  
+  <div class="admin-layout">
+    <!-- Sidebar -->
+    <aside class="admin-sidebar" id="admin-sidebar">
+      
+      
+      <div class="sidebar-header">
+        <a href="/pages/admin/dashboard.html" class="sidebar-brand">
+          <i class="fas fa-user-shield text-accent"></i>
+          <span>لوحة تحكم الإدارة</span>
+        </a>
+      </div>
+      <div class="sidebar-user">
+        <img src="" alt="صورة المدير" class="admin-avatar" id="sidebar-admin-avatar">
+        <div class="admin-user-info">
+          <span class="admin-name" id="sidebar-admin-name">المدير العام</span>
+          <span class="admin-role text-accent" id="sidebar-admin-email">admin@store.com</span>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="/pages/admin/dashboard.html" class="admin-nav-item">
+          <i class="fas fa-chart-line"></i> لوحة التحكم
+        </a>
+        <a href="/pages/admin/orders.html" class="admin-nav-item active">
+          <i class="fas fa-shopping-bag"></i> إدارة الطلبات
+        </a>
+        <a href="/pages/admin/products.html" class="admin-nav-item">
+          <i class="fas fa-box-open"></i> إدارة المنتجات
+        </a>
+        <a href="/pages/admin/users.html" class="admin-nav-item">
+          <i class="fas fa-users"></i> العملاء
+        </a>
+        <a href="/pages/admin/delivery.html" class="admin-nav-item">
+          <i class="fas fa-motorcycle"></i> فريق التوصيل
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <a href="/" class="admin-nav-item">
+          <i class="fas fa-external-link-alt"></i> عرض المتجر
+        </a>
+        <a href="#" id="admin-logout-btn" class="admin-nav-item text-error hover-bg-error hover-text-white">
+          <i class="fas fa-sign-out-alt"></i> تسجيل الخروج
+        </a>
+      </div>
+
+    </aside>
+
+    <main class="admin-main">
+      <header class="admin-header">
+        <button class="admin-menu-toggle" id="admin-menu-toggle">
+          <i class="fas fa-bars"></i>
+        </button>
+        <h1 class="admin-page-title">إدارة الطلبات</h1>
+      </header>
+
+      <div class="admin-content fade-in">
+        <div class="admin-card">
+          <div class="admin-card-header">
+            <h2 class="admin-card-title"><i class="fas fa-shopping-bag text-accent ml-xs"></i> سجل الطلبات</h2>
+          </div>
+          <div class="admin-table-container">
+            <table class="admin-table">
+              <thead>
+                  <tr>
+                    <th>رقم الطلب</th>
+                    <th>التاريخ</th>
+                    <th>العميل</th>
+                    <th>الإجمالي</th>
+                    <th>الحالة</th>
+                    <th>المندوب</th>
+                  </tr>
+                </thead>
+              <tbody id="orders-body">
+                <tr><td colspan="6" class="text-center py-xl"><div class="spinner"></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Assign Delivery Staff Modal -->
+  <div class="modal-overlay" id="assign-delivery-modal">
+    <div class="modal-content admin-card" style="max-width: 400px;">
+      <div class="modal-header">
+        <h2></h2>
+        <button class="modal-close" onclick="document.getElementById('assign-delivery-modal').classList.remove('active')">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <form id="assign-delivery-form">
+        <input type="hidden" id="assign-order-id">
+  <script type="module">
+    import { authManager } from '/js/auth.js';
+    import { toast } from '/js/toast.js';
+    import { formatPrice, formatDate } from '/js/utils.js';
+
+    authManager.onAuthChange(async (user) => {
+      if (!user || user.email !== 'admin@store.com') {
+
+        return;
+      }
+      // تحديث صورة المدير في الـ sidebar
+      const adminAvatar = document.getElementById('sidebar-admin-avatar');
+      const avatarUrl = user.user_metadata?.avatar_url || user.user_metadata?.picture;
+      if (avatarUrl) {
+        adminAvatar.src = avatarUrl;
+      } else {
+        const displayName = user.user_metadata?.full_name || 'المدير';
+        adminAvatar.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=ff6b2b&color=fff&size=80`;
+      }
+      const adminName = document.getElementById('sidebar-admin-name');
+      if (user.user_metadata?.full_name || user.displayName) adminName.textContent = user.user_metadata?.full_name || user.displayName;
+      const adminEmail = document.getElementById('sidebar-admin-email');
+      if (user.email) adminEmail.textContent = user.email;
+      loadOrders();
+    });
+
+    document.getElementById('admin-menu-toggle').addEventListener('click', () => {
+      document.getElementById('admin-sidebar').classList.toggle('active');
+    });
+
+    document.getElementById('admin-logout-btn').addEventListener('click', async (e) => {
+      e.preventDefault();
+      await authManager.logout();
+
+    });
+
+    const getStatusSelect = (orderId, currentStatus) => {
+      const statuses = [
+        { val: 'pending', text: 'قيد المراجعة' },
+        { val: 'processing', text: 'قيد التجهيز' },
+        { val: 'shipped', text: 'تم الشحن' },
+        { val: 'delivered', text: 'تم التوصيل' },
+        { val: 'cancelled', text: 'ملغي' }
+      ];
+      
+      const options = statuses.map(s => 
+        `<option value="${s.val}" ${s.val === currentStatus ? 'selected' : ''}>${s.text}</option>`
+      ).join('');
+      
+      return `
+        <select class="form-select status-select" data-id="${orderId}" style="min-width: 140px; padding: 6px;">
+          ${options}
+        </select>
+      `;
+    };
+
+    async function loadOrders() {
+      try {
+        const token = await authManager.getIdToken();
+        const res = await fetch('/api/admin/orders', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const response = await res.json();
+        
+        const tbody = document.getElementById('orders-body');
+        if (response.success) {
+          if (response.data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center text-secondary py-xl">لا توجد بيانات حالياً</td></tr>';
+          } else {
+            tbody.innerHTML = response.data.map(order => `
+              <tr>
+                <td><strong>${order.order_id}</strong></td>
+                <td><span class="text-secondary">${formatDate(order.created_at)}</span></td>
+                <td>
+                  <div class="font-bold">${order.shipping_name}</div>
+                  <div class="text-sm text-secondary">${order.shipping_phone}</div>
+                  <div class="text-sm text-secondary">${order.shipping_address} - ${order.shipping_city}</div>
+                </td>
+                <td><strong class="text-accent">${formatPrice(order.total)}</strong></td>
+                <td>
+                  ${getStatusSelect(order.id, order.status)}
+                </td>
+                <td>
+                  ${order.delivery_staff_id 
+                    ? `<div class="badge badge-success mb-xs"><i class="fas fa-motorcycle"></i> ${order.delivery_staff_name}</div><div class="text-xs text-secondary">${order.delivery_staff_phone || ''}</div>`
+                    : `<button class="btn btn-outline btn-sm assign-delivery-btn" data-id="${order.id}">إسناد لمندوب</button>`
+                  }
+                </td>
+              </tr>
+            `).join('');
+
+            // Attach assign events
+            document.querySelectorAll('.assign-delivery-btn').forEach(btn => {
+              btn.addEventListener('click', (e) => {
+                const id = e.currentTarget.dataset.id;
+                openAssignModal(id);
+              });
+            });
+
+            // Attach change events to selects
+            document.querySelectorAll('.status-select').forEach(select => {
+              select.addEventListener('change', async (e) => {
+                const id = e.target.dataset.id;
+                const newStatus = e.target.value;
+                updateOrderStatus(id, newStatus, e.target);
+              });
+            });
+          }
+        }
+      } catch (err) {
+        toast.error('حدث خطأ أثناء العملية');
+      }
+    }
+
+    async function updateOrderStatus(id, status, selectElement) {
+      const originalValue = selectElement.value; // in case of rollback
+      selectElement.disabled = true;
+      try {
+        const token = await authManager.getIdToken();
+        const res = await fetch(`/api/admin/orders/${id}/status`, {
+          method: 'PUT',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}` 
+          },
+          body: JSON.stringify({ status })
+        });
+        const response = await res.json();
+        if(response.success) {
+          toast.success('تمت العملية بنجاح');
+        } else {
+          toast.error(response.message);
+          selectElement.value = originalValue; // rollback visually
+        }
+      } catch(e) {
+        toast.error('حدث خطأ أثناء العملية');
+        selectElement.value = originalValue;
+      } finally {
+        selectElement.disabled = false;
+      }
+    }
+
+    async function openAssignModal(orderId) {
+      document.getElementById('assign-order-id').value = orderId;
+      document.getElementById('assign-delivery-modal').classList.add('active');
+      
+      const select = document.getElementById('delivery-staff-select');
+      try {
+        const token = await authManager.getIdToken();
+        const res = await fetch('/api/admin/delivery', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const response = await res.json();
+        
+        if (response.success) {
+          if (response.data.length === 0) {
+            select.innerHTML = '<option value="">لا يوجد مندوبين</option>';
+          } else {
+            select.innerHTML = '<option value="">-- اختر المندوب --</option>' + response.data.map(staff => `<option value="${staff.id}">${staff.name} - ${staff.phone || 'غير متوفر'}</option>`).join('');
+          }
+        }
+      } catch (err) {
+        select.innerHTML = '<option value="">حدث خطأ في جلب البيانات</option>';
+      }
+    }
+
+    document.getElementById('assign-delivery-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const orderId = document.getElementById('assign-order-id').value;
+      const staffId = document.getElementById('delivery-staff-select').value;
+      
+      if(!staffId) return toast.warning('يرجى اختيار المندوب أولاً');
+
+      const btn = document.getElementById('submit-assign-btn');
+      btn.disabled = true;
+      btn.innerHTML = '<div class="spinner spinner-sm"></div> جاري المعالجة...';
+
+      try {
+        const token = await authManager.getIdToken();
+        const res = await fetch(`/api/admin/orders/${orderId}/assign`, {
+          method: 'PUT',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}` 
+          },
+          body: JSON.stringify({ staffId })
+        });
+        const response = await res.json();
+        
+        if (response.success) {
+          toast.success('تمت العملية بنجاح');
+          document.getElementById('assign-delivery-modal').classList.remove('active');
+          loadOrders(); // Refresh table
+        } else {
+          toast.error(response.message);
+        }
+      } catch (err) {
+        toast.error('حدث خطأ أثناء العملية');
+      } finally {
+        btn.disabled = false;
+        btn.innerText = 'حفظ التعديلات';
+      }
+    });
+  </script>
+</body>
+</html>
+

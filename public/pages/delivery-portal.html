@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>بوابة التوصيل</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/variables.css">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <script>
+    // حماية البوابة السريعة
+    const token = localStorage.getItem('delivery_token');
+    if (!token) window.location.replace('/pages/delivery-login.html');
+  </script>
+  <style>
+    body { 
+      background: radial-gradient(circle at 15% 50%, rgba(255, 107, 43, 0.08), transparent 25%),
+                  radial-gradient(circle at 85% 30%, rgba(34, 197, 94, 0.05), transparent 25%),
+                  var(--color-bg-primary); 
+      margin: 0;
+      font-family: var(--font-primary);
+    }
+    .delivery-header {
+      background: rgba(30, 37, 56, 0.7);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      padding: var(--space-md) var(--space-xl);
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+    }
+    .order-card {
+      background: rgba(30, 37, 56, 0.5);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-radius: 20px;
+      padding: var(--space-lg);
+      margin-bottom: var(--space-lg);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      box-shadow: 0 10px 20px -10px rgba(0,0,0,0.3);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .order-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 15px 30px -10px rgba(0,0,0,0.5), 0 0 0 1px rgba(255, 107, 43, 0.2) inset;
+    }
+    .order-card-header {
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px dashed rgba(255,255,255,0.1);
+      padding-bottom: var(--space-md);
+      margin-bottom: var(--space-md);
+    }
+    .btn-deliver {
+      width: 100%;
+      margin-top: var(--space-lg);
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      border: none;
+      color: white;
+      font-weight: bold;
+      border-radius: 12px;
+      padding: 1rem;
+      font-size: 1.05rem;
+      box-shadow: 0 10px 20px -10px rgba(34, 197, 94, 0.6);
+      transition: transform 0.2s, box-shadow 0.2s;
+      cursor: pointer;
+    }
+    .btn-deliver:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 15px 25px -10px rgba(34, 197, 94, 0.8);
+    }
+    .btn-deliver:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .info-box {
+      background: rgba(15, 20, 25, 0.4);
+      padding: 0.8rem;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.03);
+    }
+  </style>
+</head>
+<body>
+
+  <header class="delivery-header">
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <div style="width:40px;height:40px;border-radius:50%;background:var(--color-accent);display:flex;align-items:center;justify-content:center;color:white;">
+        <i class="fas fa-user-check"></i>
+      </div>
+      <div>
+        <div class="font-bold" id="staff-name-display">مندوب</div>
+        <div class="text-xs text-success"><i class="fas fa-circle"></i> متصل وجاهز</div>
+      </div>
+    </div>
+    <button class="btn btn-ghost text-error" id="logout-btn">
+      <i class="fas fa-sign-out-alt"></i> خروج
+    </button>
+  </header>
+
+  <main class="container" style="max-width: 600px; padding: var(--space-xl) var(--space-md); margin: 0 auto;">
+    <h2 class="mb-lg"><i class="fas fa-box-open text-accent"></i> شحنات في انتظار التوصيل</h2>
+    
+    <div id="orders-container">
+      <div class="text-center py-xl"><div class="spinner"></div> جاري تحميل الطلبات...</div>
+    </div>
+  </main>
+
+  <div class="toast-container" id="toast-container"></div>
+
+  <script type="module">
+    import { toast } from '/js/toast.js';
+    import { formatPrice, customConfirm } from '/js/utils.js';
+
+    document.getElementById('staff-name-display').textContent = localStorage.getItem('delivery_name') || 'مندوب التوصيل';
+
+    document.getElementById('logout-btn').addEventListener('click', () => {
+      localStorage.removeItem('delivery_token');
+      localStorage.removeItem('delivery_name');
+      window.location.replace('/pages/delivery-login.html');
+    });
+
+    async function loadOrders() {
+      const container = document.getElementById('orders-container');
+      try {
+        const token = localStorage.getItem('delivery_token');
+        const res = await fetch('/api/delivery/orders', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        // إذا انتهت الصلاحية أو تم طرده
+        if (res.status === 401) {
+          localStorage.removeItem('delivery_token');
+          window.location.replace('/pages/delivery-login.html');
+          return;
+        }
+
+        const response = await res.json();
+        
+        if (response.success) {
+          if (response.data.length === 0) {
+            container.innerHTML = `
+              <div class="empty-state">
+                <i class="fas fa-check-double empty-state-icon" style="color:var(--color-success)"></i>
+                <h3 class="empty-state-title">لا توجد شحنات معلقة!</h3>
+                <p class="empty-state-text">لقد قمت بتوصيل كل شيء بنجاح، يمكنك الاستراحة الآن.</p>
+                <button class="btn btn-outline mt-md" onclick="location.reload()">تحديث البيانات</button>
+              </div>
+            `;
+          } else {
+            container.innerHTML = response.data.map(order => `
+              <div class="order-card fade-in">
+                <div class="order-card-header">
+                  <span class="font-bold text-accent" style="font-size: 1.1rem;">${order.order_id}</span>
+                  <span class="text-secondary" style="font-weight: bold;">${formatPrice(order.total)}</span>
+                </div>
+                <div class="mb-sm">
+                  <div class="text-sm text-secondary mb-xs"><i class="fas fa-user"></i> العميل:</div>
+                  <div class="font-bold text-lg">${order.shipping_name}</div>
+                </div>
+                <div class="mb-sm">
+                  <div class="text-sm text-secondary mb-xs"><i class="fas fa-phone"></i> رقم الهاتف:</div>
+                  <a href="tel:${order.shipping_phone}" class="font-bold" style="color:var(--color-accent); font-size: 1.1rem; text-decoration: none;">
+                    ${order.shipping_phone} <i class="fas fa-phone-volume mr-xs"></i>
+                  </a>
+                </div>
+                <div class="mb-sm">
+                  <div class="text-sm text-secondary mb-xs"><i class="fas fa-map-marker-alt"></i> عنوان التوصيل:</div>
+                  <div class="info-box text-sm">${order.shipping_address}، ${order.shipping_city}</div>
+                </div>
+                
+                <button class="btn-deliver deliver-btn" data-id="${order.id}">
+                  <i class="fas fa-check-circle"></i> تأكيد تسليم الشحنة
+                </button>
+              </div>
+            `).join('');
+
+            // تفعيل أزرار التوصيل
+            document.querySelectorAll('.deliver-btn').forEach(btn => {
+              btn.addEventListener('click', async (e) => {
+                const id = e.currentTarget.dataset.id;
+                const button = e.currentTarget;
+                
+                customConfirm('تأكيد التسليم', 'هل أنت متأكد من تسليم الشحنة للعميل واستلام المبلغ بالكامل؟', async () => {
+                  const originalText = button.innerHTML;
+                  button.innerHTML = '<span class="spinner" style="width:20px;height:20px;border-width:2px;display:inline-block"></span> جاري التأكيد...';
+                  button.disabled = true;
+
+                  try {
+                    const token = localStorage.getItem('delivery_token');
+                    const res = await fetch(`/api/delivery/orders/${id}/deliver`, {
+                      method: 'PUT',
+                      headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    const response = await res.json();
+                    if (response.success) {
+                      toast.success('عمل رائع! تم إغلاق الطلب.');
+                      button.closest('.order-card').style.opacity = '0.5';
+                      setTimeout(loadOrders, 1000);
+                    } else {
+                      toast.error(response.message);
+                      button.innerHTML = originalText;
+                      button.disabled = false;
+                    }
+                  } catch (err) {
+                    toast.error('حدث خطأ');
+                    button.innerHTML = originalText;
+                    button.disabled = false;
+                  }
+                });
+              });
+            });
+          }
+        }
+      } catch (err) {
+        container.innerHTML = '<div class="text-center text-error py-xl"><i class="fas fa-exclamation-triangle fa-2x mb-sm"></i><br>حدث خطأ في الاتصال، تحقق من الإنترنت</div>';
+      }
+    }
+
+    loadOrders();
+    
+    // تحديث تلقائي كل 30 ثانية للمناديب لجلب الشحنات الجديدة
+    setInterval(loadOrders, 30000);
+  </script>
+</body>
+</html>

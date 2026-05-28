@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <script>
+    const tokens = Object.keys(localStorage).filter(k => k.startsWith('sb-') && k.endsWith('-auth-token'));
+    if (tokens.length === 0) window.location.replace('/pages/login.html');
+    else {
+      try {
+        const session = JSON.parse(localStorage.getItem(tokens[0]));
+        if (session?.user?.email !== 'admin@store.com') window.location.replace('/');
+      } catch(e) {}
+    }
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>لوحة التحكم | المتجر الإلكتروني</title>
+  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/variables.css">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/pages/admin.css">
+
+  <style>
+    /* Alignment fix */
+    .admin-card-header {
+      margin-bottom: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .admin-card-title {
+      margin: 0 !important;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .admin-table-container {
+      margin-top: 0;
+    }
+    .admin-table th, .admin-table td {
+      vertical-align: middle;
+    }
+  </style>
+
+  <style>
+    /* Final alignment fix */
+    .admin-card-header {
+      margin-bottom: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .admin-card-title {
+      margin: 0 !important;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .admin-table-container {
+      margin-top: 0;
+    }
+  </style>
+</head>
+<body class="admin-body">
+  
+  <div class="admin-layout">
+    <!-- Sidebar -->
+    <aside class="admin-sidebar" id="admin-sidebar">
+      
+      
+      <div class="sidebar-header">
+        <a href="/pages/admin/dashboard.html" class="sidebar-brand">
+          <i class="fas fa-user-shield text-accent"></i>
+          <span>لوحة تحكم الإدارة</span>
+        </a>
+      </div>
+      <div class="sidebar-user">
+        <img src="" alt="صورة المدير" class="admin-avatar" id="sidebar-admin-avatar">
+        <div class="admin-user-info">
+          <span class="admin-name" id="sidebar-admin-name">المدير العام</span>
+          <span class="admin-role text-accent" id="sidebar-admin-email">admin@store.com</span>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="/pages/admin/dashboard.html" class="admin-nav-item active">
+          <i class="fas fa-chart-line"></i> لوحة التحكم
+        </a>
+        <a href="/pages/admin/orders.html" class="admin-nav-item">
+          <i class="fas fa-shopping-bag"></i> إدارة الطلبات
+        </a>
+        <a href="/pages/admin/products.html" class="admin-nav-item">
+          <i class="fas fa-box-open"></i> إدارة المنتجات
+        </a>
+        <a href="/pages/admin/users.html" class="admin-nav-item">
+          <i class="fas fa-users"></i> العملاء
+        </a>
+        <a href="/pages/admin/delivery.html" class="admin-nav-item">
+          <i class="fas fa-motorcycle"></i> فريق التوصيل
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <a href="/" class="admin-nav-item">
+          <i class="fas fa-external-link-alt"></i> عرض المتجر
+        </a>
+        <a href="#" id="admin-logout-btn" class="admin-nav-item text-error hover-bg-error hover-text-white">
+          <i class="fas fa-sign-out-alt"></i> تسجيل الخروج
+        </a>
+      </div>
+
+    </aside>
+
+    <!-- Main Content -->
+    <main class="admin-main">
+      <header class="admin-header">
+        <button class="admin-menu-toggle" id="admin-menu-toggle">
+          <i class="fas fa-bars"></i>
+        </button>
+        <h1 class="admin-page-title">لوحة التحكم (نظرة عامة)</h1>
+        <div class="admin-header-actions">
+          <div class="admin-date" id="current-date"></div>
+        </div>
+      </header>
+
+      <div class="admin-content fade-in">
+        <!-- Stats Grid -->
+        <div class="admin-stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon bg-accent-glow text-accent">
+              <i class="fas fa-coins"></i>
+            </div>
+            <div class="stat-info">
+              <h3 class="stat-label">إجمالي الإيرادات</h3>
+              <div class="stat-value text-accent" id="stat-revenue">0</div>
+            </div>
+          </div>
+          
+          <div class="stat-card">
+            <div class="stat-icon bg-info-glow text-info">
+              <i class="fas fa-shopping-cart"></i>
+            </div>
+            <div class="stat-info">
+              <h3 class="stat-label">إجمالي الطلبات</h3>
+              <div class="stat-value" id="stat-orders">0</div>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon bg-success-glow text-success">
+              <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-info">
+              <h3 class="stat-label">العملاء المسجلين</h3>
+              <div class="stat-value" id="stat-users">0</div>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon bg-warning-glow text-warning">
+              <i class="fas fa-box"></i>
+            </div>
+            <div class="stat-info">
+              <h3 class="stat-label">إجمالي المنتجات</h3>
+              <div class="stat-value" id="stat-products">0</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Orders Table -->
+        <div class="admin-card mt-xl">
+          <div class="admin-card-header">
+            <h2 class="admin-card-title"><i class="fas fa-clock text-accent ml-xs"></i> أحدث الطلبات</h2>
+            <a href="/pages/admin/orders.html" class="btn btn-outline btn-sm">عرض الكل</a>
+          </div>
+          <div class="admin-table-container">
+            <table class="admin-table">
+              <thead>
+                  <tr>
+                    <th>رقم الطلب</th>
+                    <th>التاريخ</th>
+                    <th>العميل</th>
+                    <th>الإجمالي</th>
+                    <th>الحالة</th>
+                  </tr>
+                </thead>
+              <tbody id="recent-orders-body">
+                <tr><td colspan="5" class="text-center py-xl"><div class="spinner"></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+
+  <script type="module">
+    import { authManager } from '/js/auth.js';
+    import { api } from '/js/api.js';
+    import { formatPrice, formatDate } from '/js/utils.js';
+    
+    // Auth Protection (Admin Only)
+    authManager.onAuthChange(async (user) => {
+      if (!user || user.email !== 'admin@store.com') {
+        return;
+      }
+      
+      // تحديث صورة المدير في الـ sidebar
+      const adminAvatar = document.getElementById('sidebar-admin-avatar');
+      const avatarUrl = user.user_metadata?.avatar_url || user.user_metadata?.picture;
+      if (avatarUrl) {
+        adminAvatar.src = avatarUrl;
+      } else {
+        const displayName = user.user_metadata?.full_name || 'المدير';
+        adminAvatar.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=ff6b2b&color=fff&size=80`;
+      }
+      
+      const adminName = document.getElementById('sidebar-admin-name');
+      if (user.user_metadata?.full_name) {
+        adminName.textContent = user.user_metadata.full_name;
+      }
+      
+      const adminEmail = document.getElementById('sidebar-admin-email');
+      if (user.email) adminEmail.textContent = user.email;
+      
+      loadDashboardStats();
+    });
+
+    document.getElementById('current-date').textContent = new Date().toLocaleDateString('ar-EG', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+    document.getElementById('admin-menu-toggle').addEventListener('click', () => {
+      document.getElementById('admin-sidebar').classList.toggle('active');
+    });
+
+    document.getElementById('admin-logout-btn').addEventListener('click', async (e) => {
+      e.preventDefault();
+      await authManager.logout();
+    });
+
+    const getStatusBadge = (status) => {
+      const map = {
+        'pending': { class: 'status-pending', text: 'قيد المراجعة' },
+        'processing': { class: 'status-processing', text: 'قيد التجهيز' },
+        'shipped': { class: 'status-shipped', text: 'تم الشحن' },
+        'delivered': { class: 'status-delivered', text: 'تم التوصيل' },
+        'cancelled': { class: 'status-cancelled', text: 'ملغي' }
+      };
+      const info = map[status] || map['pending'];
+      return `<span class="badge ${info.class}">${info.text}</span>`;
+    };
+
+    async function loadDashboardStats() {
+      try {
+        const token = await authManager.getIdToken();
+        const res = await fetch('/api/admin/stats', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const response = await res.json();
+        
+        if (response.success) {
+          const stats = response.data;
+          document.getElementById('stat-revenue').textContent = formatPrice(stats.totalRevenue);
+          document.getElementById('stat-orders').textContent = stats.ordersCount;
+          document.getElementById('stat-users').textContent = stats.usersCount;
+          document.getElementById('stat-products').textContent = stats.productsCount;
+
+          const tbody = document.getElementById('recent-orders-body');
+          if (stats.recentOrders.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center text-secondary">لا توجد طلبات حديثة</td></tr>';
+          } else {
+            tbody.innerHTML = stats.recentOrders.map(order => `
+              <tr>
+                <td><strong>${order.order_id}</strong></td>
+                <td><span class="text-secondary">${formatDate(order.created_at)}</span></td>
+                <td>
+                  <div>${order.shipping_name}</div>
+                  <div class="text-sm text-secondary">${order.shipping_phone}</div>
+                </td>
+                <td><strong class="text-accent">${formatPrice(order.total)}</strong></td>
+                <td>${getStatusBadge(order.status)}</td>
+              </tr>
+            `).join('');
+          }
+        }
+      } catch (err) {
+        console.error('Error loading stats', err);
+      }
+    }
+
+            // جلب أحدث الطلبات
+    setInterval(loadDashboardStats, 15000);
+  </script>
+</body>
+</html>
+

@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <script>
+    const tokens = Object.keys(localStorage).filter(k => k.startsWith('sb-') && k.endsWith('-auth-token'));
+    if (tokens.length === 0) window.location.replace('/pages/login.html');
+    else {
+      try {
+        const session = JSON.parse(localStorage.getItem(tokens[0]));
+        if (session?.user?.email !== 'admin@store.com') window.location.replace('/');
+      } catch(e) {}
+    }
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>إدارة المنتجات | المتجر الإلكتروني</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/variables.css">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/pages/admin.css">
+
+  <style>
+    /* Alignment fix */
+    .admin-card-header {
+      margin-bottom: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .admin-card-title {
+      margin: 0 !important;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .admin-table-container {
+      margin-top: 0;
+    }
+    .admin-table th, .admin-table td {
+      vertical-align: middle;
+    }
+  </style>
+
+  <style>
+    /* Final alignment fix */
+    .admin-card-header {
+      margin-bottom: 15px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .admin-card-title {
+      margin: 0 !important;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .admin-table-container {
+      margin-top: 0;
+    }
+  </style>
+</head>
+<body class="admin-body">
+  
+  <div class="admin-layout">
+    <!-- Sidebar -->
+    <aside class="admin-sidebar" id="admin-sidebar">
+      
+      
+      <div class="sidebar-header">
+        <a href="/pages/admin/dashboard.html" class="sidebar-brand">
+          <i class="fas fa-user-shield text-accent"></i>
+          <span>لوحة تحكم الإدارة</span>
+        </a>
+      </div>
+      <div class="sidebar-user">
+        <img src="" alt="صورة المدير" class="admin-avatar" id="sidebar-admin-avatar">
+        <div class="admin-user-info">
+          <span class="admin-name" id="sidebar-admin-name">المدير العام</span>
+          <span class="admin-role text-accent" id="sidebar-admin-email">admin@store.com</span>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="/pages/admin/dashboard.html" class="admin-nav-item">
+          <i class="fas fa-chart-line"></i> لوحة التحكم
+        </a>
+        <a href="/pages/admin/orders.html" class="admin-nav-item">
+          <i class="fas fa-shopping-bag"></i> إدارة الطلبات
+        </a>
+        <a href="/pages/admin/products.html" class="admin-nav-item active">
+          <i class="fas fa-box-open"></i> إدارة المنتجات
+        </a>
+        <a href="/pages/admin/users.html" class="admin-nav-item">
+          <i class="fas fa-users"></i> العملاء
+        </a>
+        <a href="/pages/admin/delivery.html" class="admin-nav-item">
+          <i class="fas fa-motorcycle"></i> فريق التوصيل
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <a href="/" class="admin-nav-item">
+          <i class="fas fa-external-link-alt"></i> عرض المتجر
+        </a>
+        <a href="#" id="admin-logout-btn" class="admin-nav-item text-error hover-bg-error hover-text-white">
+          <i class="fas fa-sign-out-alt"></i> تسجيل الخروج
+        </a>
+      </div>
+
+    </aside>
+
+    <main class="admin-main">
+      <header class="admin-header">
+        <button class="admin-menu-toggle" id="admin-menu-toggle">
+          <i class="fas fa-bars"></i>
+        </button>
+        <h1 class="admin-page-title">إدارة المنتجات</h1>
+        <div class="admin-header-actions">
+          <button class="btn btn-primary" onclick="document.getElementById('add-product-modal').classList.add('active')">
+            <i class="fas fa-plus"></i> إضافة منتج
+          </button>
+        </div>
+      </header>
+
+      <div class="admin-content fade-in">
+        <div class="admin-card">
+          <div class="admin-card-header">
+            <h2 class="admin-card-title"><i class="fas fa-box-open text-accent ml-xs"></i> المخزون</h2>
+          </div>
+          <div class="admin-table-container">
+            <table class="admin-table">
+              <thead>
+                  <tr>
+                    <th>المنتج</th>
+                    <th>الفئة</th>
+                    <th>السعر</th>
+                    <th>المخزون</th>
+                    <th>الإجراءات</th>
+                  </tr>
+                </thead>
+              <tbody id="products-body">
+                <tr><td colspan="5" class="text-center py-xl"><div class="spinner"></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+          
+          <!-- Pagination -->
+          <div class="flex-center mt-lg gap-sm" id="pagination-controls">
+            <!-- Dynamically generated -->
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Add Product Modal -->
+  <div class="modal-overlay" id="add-product-modal">
+    <div class="modal-content admin-card" style="max-width: 700px; max-height: 90vh; overflow-y: auto;">
+      <div class="modal-header">
+        <h2><i class="fas fa-plus-circle text-accent"></i> إضافة منتج</h2>
+        <button class="modal-close" onclick="document.getElementById('add-product-modal').classList.remove('active')">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <form id="add-product-form">
+        <div class="form-group">
+          <label class="form-label" for="prod-name">اسم المنتج</label>
+          <input type="text" id="name" class="form-input" required minlength="2">
+        </div>
+        
+        <div class="flex-between gap-md">
+          <div class="form-group flex-1">
+            <label class="form-label" for="prod-category">الفئة</label>
+            <input type="number" id="price" class="form-input" required min="1" step="0.01">
+          </div>
+          <div class="form-group flex-1">
+            <label class="form-label" for="prod-price">السعر ($)</label>
+            <input type="number" id="stock" class="form-input" required min="0" value="10">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="prod-stock">المخزون</label>
+          <select id="category" class="form-select" required>
+            <option value="">-- اختر الفئة --</option>
+            <option value="electronics">إلكترونيات</option>
+            <option value="clothing">ملابس</option>
+            <option value="shoes">أحذية</option>
+            <option value="books">كتب</option>
+            <option value="furniture">أثاث</option>
+            <option value="beauty">مستحضرات تجميل</option>
+            <option value="toys">ألعاب</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="prod-desc">الوصف</label>
+          <textarea id="description" class="form-textarea" required></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="prod-images">صور المنتج</label>
+          <input type="file" id="image-file" class="form-input" accept="image/*" multiple required>
+        </div>
+        
+        <div class="mb-md hidden" id="image-preview-container" style="display: flex; gap: 8px; flex-wrap: wrap;"></div>
+
+        <button type="submit" class="btn btn-primary btn-block btn-lg" id="submit-btn">
+          <i class="fas fa-save ml-xs"></i> حفظ وإضافة المنتج
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Edit Product Modal -->
+  <div class="modal-overlay" id="edit-product-modal">
+    <div class="modal-content admin-card" style="max-width: 700px; max-height: 90vh; overflow-y: auto;">
+      <div class="modal-header">
+        <h2><i class="fas fa-edit text-accent"></i> تعديل بيانات المنتج</h2>
+        <button type="button" class="modal-close" onclick="document.getElementById('edit-product-modal').classList.remove('active')">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <form id="edit-product-form">
+        <input type="hidden" id="edit-product-id">
+        <input type="hidden" id="edit-existing-image">
+        <div class="form-group">
+          <label class="form-label" for="edit-name">اسم المنتج</label>
+          <input type="text" id="edit-name" class="form-input" required minlength="2">
+        </div>
+        
+        <div class="flex-between gap-md">
+          <div class="form-group flex-1">
+            <label class="form-label" for="edit-price">السعر ($)</label>
+            <input type="number" id="edit-price" class="form-input" required min="1" step="0.01">
+          </div>
+          <div class="form-group flex-1">
+            <label class="form-label" for="edit-stock">المخزون</label>
+            <input type="number" id="edit-stock" class="form-input" required min="0">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="edit-category">الفئة</label>
+          <select id="edit-category" class="form-select" required>
+            <option value="">-- اختر الفئة --</option>
+            <option value="electronics">إلكترونيات</option>
+            <option value="clothing">ملابس</option>
+            <option value="shoes">أحذية</option>
+            <option value="books">كتب</option>
+            <option value="furniture">أثاث</option>
+            <option value="beauty">مستحضرات تجميل</option>
+            <option value="toys">ألعاب</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="edit-description">الوصف</label>
+          <textarea id="edit-description" class="form-textarea" required></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="edit-image-file">صور المنتج</label>
+          <input type="file" id="edit-image-file" class="form-input" accept="image/*">
+          <small class="text-secondary mt-xs">اختر صورة جديدة إذا كنت تريد الاستبدال.</small>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block btn-lg" id="edit-submit-btn">
+          حفظ التعديلات
+        </button>
+      </form>
+    </div>
+  </div>
+
+<script type="module">
+    import { authManager } from '/js/auth.js';
+    import { toast } from '/js/toast.js';
+    import { formatPrice, customConfirm, translateCategory } from '/js/utils.js';
+
+    let currentPage = 1;
+
+    authManager.onAuthChange(async (user) => {
+      if (!user || user.email !== 'admin@store.com') {
+
+        return;
+      }
+      // تحديث صورة المدير في الـ sidebar
+      const adminAvatar = document.getElementById('sidebar-admin-avatar');
+      const avatarUrl = user.user_metadata?.avatar_url || user.user_metadata?.picture;
+      if (avatarUrl) {
+        adminAvatar.src = avatarUrl;
+      } else {
+        const displayName = user.user_metadata?.full_name || 'المدير';
+        adminAvatar.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=ff6b2b&color=fff&size=80`;
+      }
+      const adminName = document.getElementById('sidebar-admin-name');
+      if (user.user_metadata?.full_name || user.displayName) adminName.textContent = user.user_metadata?.full_name || user.displayName;
+      const adminEmail = document.getElementById('sidebar-admin-email');
+      if (user.email) adminEmail.textContent = user.email;
+      loadProducts(1);
+    });
+
+    document.getElementById('admin-menu-toggle').addEventListener('click', () => {
+      document.getElementById('admin-sidebar').classList.toggle('active');
+    });
+
+    document.getElementById('admin-logout-btn').addEventListener('click', async (e) => {
+      e.preventDefault();
+      await authManager.logout();
+
+    });
+
+    async function loadProducts(page = 1) {
+      currentPage = page;
+      try {
+        const res = await fetch(`/api/products?page=${page}&limit=10`);
+        const response = await res.json();
+        
+        const tbody = document.getElementById('products-body');
+        if (response.success) {
+          const { products, pagination } = response.data;
+          
+          if (products.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center text-secondary py-xl">لا توجد بيانات حالياً</td></tr>';
+          } else {
+            tbody.innerHTML = products.map(product => `
+              <tr>
+                <td>
+                  <div class="table-item-info">
+                    <img src="${product.image || '/images/placeholder.jpg'}" alt="" class="table-item-img">
+                    <strong>${product.name}</strong>
+                  </div>
+                </td>
+                <td><span class="badge badge-outline">${translateCategory(product.category)}</span></td>
+                <td><strong class="text-accent">${formatPrice(product.price)}</strong></td>
+                <td><span class="text-secondary">${product.stock} قطعة</span></td>
+                <td>
+                  <div style="display: flex; gap: 8px;">
+                    <button class="btn btn-outline btn-sm hover-bg-success hover-text-white border-success text-success edit-btn" data-id="${product.id}">
+                      <i class="fas fa-edit"></i> تعديل
+                    </button>
+                    <button class="btn btn-outline btn-sm hover-bg-error hover-text-white border-error text-error delete-btn" data-id="${product.id}">
+                      <i class="fas fa-trash"></i> حذف
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            `).join('');
+
+            // Attach edit events
+            document.querySelectorAll('.edit-btn').forEach(btn => {
+              btn.addEventListener('click', (e) => {
+                const id = e.currentTarget.dataset.id;
+                const product = products.find(p => p.id == id);
+                if (product) openEditModal(product);
+              });
+            });
+
+            // Attach delete events
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+              btn.addEventListener('click', (e) => {
+                const id = e.currentTarget.dataset.id;
+                customConfirm('تأكيد الحذف', 'هل أنت متأكد من رغبتك في حذف هذا العنصر؟ لا يمكن التراجع.', async () => {
+                  deleteProduct(id);
+                });
+              });
+            });
+
+            // Setup pagination
+            setupPagination(pagination);
+          }
+        }
+      } catch (err) {
+        toast.error('حدث خطأ أثناء العملية');
+      }
+    }
+
+    function setupPagination(pagination) {
+      const container = document.getElementById('pagination-controls');
+      container.innerHTML = '';
+      
+      if(pagination.totalPages <= 1) return;
+
+      if(pagination.hasPrevPage) {
+        const btn = document.createElement('button');
+        btn.className = 'btn btn-outline btn-sm';
+        btn.innerHTML = '<i class="fas fa-chevron-right"></i>';
+        btn.onclick = () => loadProducts(pagination.currentPage - 1);
+        container.appendChild(btn);
+      }
+
+      const span = document.createElement('span');
+      span.className = 'text-secondary font-sm';
+      span.innerText = `صفحة ${pagination.currentPage} من ${pagination.totalPages}`;
+      container.appendChild(span);
+
+      if(pagination.hasNextPage) {
+        const btn = document.createElement('button');
+        btn.className = 'btn btn-outline btn-sm';
+        btn.innerHTML = '<i class="fas fa-chevron-left"></i>';
+        btn.onclick = () => loadProducts(pagination.currentPage + 1);
+        container.appendChild(btn);
+      }
+    }
+
+    async function deleteProduct(id) {
+      try {
+        const token = await authManager.getIdToken();
+        const res = await fetch(`/api/products/${id}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const response = await res.json();
+        if(response.success) {
+          toast.success('تمت العملية بنجاح');
+          loadProducts(currentPage);
+        } else {
+          toast.error(response.message);
+        }
+      } catch(e) {
+        toast.error('حدث خطأ أثناء العملية');
+      }
+    }
+
+    // Modal Add Product Logic
+    const fileInput = document.getElementById('image-file');
+    const previewContainer = document.getElementById('image-preview-container');
+    fileInput.addEventListener('change', (e) => {
+      previewContainer.innerHTML = '';
+      if (e.target.files.length > 0) {
+        previewContainer.classList.remove('hidden');
+        Array.from(e.target.files).forEach(file => {
+          const reader = new FileReader();
+          reader.onload = (ev) => {
+            const img = document.createElement('img');
+            img.src = ev.target.result;
+            img.style = "width: 80px; height: 80px; object-fit: cover; border-radius: var(--radius-sm); border: 1px solid var(--border-color);";
+            previewContainer.appendChild(img);
+          };
+          reader.readAsDataURL(file);
+        });
+      } else {
+        previewContainer.classList.add('hidden');
+      }
+    });
+
+    document.getElementById('add-product-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const btn = document.getElementById('submit-btn');
+      const originalText = btn.innerHTML;
+      
+      const files = fileInput.files;
+      if (files.length === 0) {
+        toast.error('حدث خطأ أثناء العملية');
+        return;
+      }
+
+      btn.innerHTML = '<div class="spinner spinner-sm"></div> جاري المعالجة...';
+      btn.disabled = true;
+
+      try {
+        const token = await authManager.getIdToken();
+        
+        // 1. Upload images
+        const formData = new FormData();
+        Array.from(files).forEach(f => formData.append('images', f));
+        
+        const uploadRes = await fetch('/api/products/upload-images', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` },
+          body: formData
+        });
+        const uploadData = await uploadRes.json();
+        
+        if (!uploadData.success || !uploadData.data.urls) {
+          throw new Error('حدث خطأ أثناء المعالجة');
+        }
+        
+        const imageUrl = uploadData.data.urls.join(',');
+
+        // 2. Create product
+        const productData = {
+          name: document.getElementById('name').value.trim(),
+          price: parseFloat(document.getElementById('price').value),
+          stock: parseInt(document.getElementById('stock').value),
+          category: document.getElementById('category').value,
+          description: document.getElementById('description').value.trim(),
+          image: imageUrl
+        };
+
+        const createRes = await fetch('/api/products', {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}` 
+          },
+          body: JSON.stringify(productData)
+        });
+        const createData = await createRes.json();
+        
+        if (createData.success) {
+          toast.success('تمت العملية بنجاح');
+          document.getElementById('add-product-form').reset();
+          previewContainer.classList.add('hidden');
+          document.getElementById('add-product-modal').classList.remove('active');
+          loadProducts(1);
+        } else {
+          throw new Error(createData.message);
+        }
+
+      } catch (error) {
+        toast.error(error.message || 'حدث خطأ غير معروف');
+      } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+      }
+    });
+    // Edit Product Logic
+    function openEditModal(product) {
+      document.getElementById('edit-product-id').value = product.id;
+      document.getElementById('edit-name').value = product.name;
+      document.getElementById('edit-price').value = product.price;
+      document.getElementById('edit-stock').value = product.stock;
+      document.getElementById('edit-category').value = product.category;
+      document.getElementById('edit-description').value = product.description;
+      document.getElementById('edit-existing-image').value = product.image || '';
+      
+      document.getElementById('edit-product-modal').classList.add('active');
+    }
+
+    document.getElementById('edit-product-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const id = document.getElementById('edit-product-id').value;
+      const name = document.getElementById('edit-name').value;
+      const price = document.getElementById('edit-price').value;
+      const stock = document.getElementById('edit-stock').value;
+      const category = document.getElementById('edit-category').value;
+      const description = document.getElementById('edit-description').value;
+      const existingImage = document.getElementById('edit-existing-image').value;
+      
+      const fileInput = document.getElementById('edit-image-file');
+      
+      const submitBtn = document.getElementById('edit-submit-btn');
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<div class="spinner spinner-sm"></div> جاري المعالجة...';
+
+      try {
+        const token = await authManager.getIdToken();
+        let imageUrl = existingImage;
+
+        // Upload new image if selected
+        if (fileInput.files.length > 0) {
+          const file = fileInput.files[0];
+          const formData = new FormData();
+          formData.append('image', file);
+
+          const uploadRes = await fetch('/api/products/upload-image', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` },
+            body: formData
+          });
+          const uploadData = await uploadRes.json();
+          if (!uploadData.success) {
+            throw new Error(uploadData.message || 'حدث خطأ أثناء الرفع');
+          }
+          imageUrl = uploadData.data.url;
+        }
+
+        const res = await fetch(`/api/products/${id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ name, price, stock, category, description, image: imageUrl })
+        });
+        
+        const response = await res.json();
+        
+        if (response.success) {
+          toast.success('تمت العملية بنجاح');
+          document.getElementById('edit-product-modal').classList.remove('active');
+          loadProducts(currentPage);
+        } else {
+          toast.error(response.message);
+        }
+      } catch (err) {
+        console.error("Edit Product Error:", err);
+        toast.error('حدث خطأ: ' + err.message);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerText = 'حفظ التعديلات';
+      }
+    });
+  </script>
+</body>
+</html>
+

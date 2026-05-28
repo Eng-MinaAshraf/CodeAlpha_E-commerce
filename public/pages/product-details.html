@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>تفاصيل المنتج | متجرنا</title>
+  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/variables.css">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/pages/product-details.css">
+</head>
+<body>
+  <!-- Shared Navbar -->
+  <nav class="navbar" id="main-navbar">
+    <div class="navbar-container container">
+      <a href="/" class="navbar-brand">🛍️ متجرنا</a>
+      <button class="navbar-menu-toggle" id="menu-toggle" aria-label="القائمة">
+        <i class="fas fa-bars"></i>
+      </button>
+      <ul class="navbar-links" id="nav-links">
+        <li><a href="/">الرئيسية</a></li>
+        <li><a href="/pages/products.html" class="active">المنتجات</a></li>
+        <li><a href="/pages/cart.html" class="navbar-cart">
+          <i class="fas fa-shopping-cart"></i> السلة
+          <span class="navbar-cart-badge cart-count" id="cart-badge">0</span>
+        </a></li>
+        <li><a href="/pages/orders.html">طلباتي</a></li>
+      </ul>
+      <div class="navbar-user" id="navbar-user">
+        <div class="navbar-guest" id="navbar-guest">
+          <a href="/pages/login.html" class="btn btn-outline btn-sm">تسجيل الدخول</a>
+          <a href="/pages/signup.html" class="btn btn-primary btn-sm">حساب جديد</a>
+        </div>
+        <div class="navbar-logged" id="navbar-logged" style="display:none;">
+          <img src="https://ui-avatars.com/api/?name=User&background=ff6b2b&color=fff&size=36" alt="الصورة" id="nav-user-photo" class="navbar-avatar">
+          <span id="nav-user-name">المستخدم</span>
+          <div class="navbar-dropdown">
+            <a href="/pages/orders.html"><i class="fas fa-box"></i> طلباتي</a>
+            <a href="#" id="nav-logout-btn"><i class="fas fa-sign-out-alt"></i> تسجيل الخروج</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container section">
+    <div class="breadcrumb" id="breadcrumb">
+      <a href="/">الرئيسية</a>
+      <span class="breadcrumb-separator">/</span>
+      <a href="/pages/products.html">المنتجات</a>
+      <span class="breadcrumb-separator">/</span>
+      <span class="breadcrumb-current skeleton-text w-32 inline-block m-0"></span>
+    </div>
+
+    <div id="product-container">
+      <!-- Loading Skeleton -->
+      <div class="product-detail-layout" id="product-skeleton">
+        <div class="skeleton skeleton-image" style="height: 400px"></div>
+        <div class="product-info">
+          <div class="skeleton skeleton-text w-24"></div>
+          <div class="skeleton skeleton-title w-3/4" style="height: 2rem"></div>
+          <div class="skeleton skeleton-title w-1/4" style="height: 3rem"></div>
+          <div class="skeleton skeleton-text w-full"></div>
+          <div class="skeleton skeleton-text w-full"></div>
+          <div class="skeleton skeleton-text w-2/3"></div>
+          <div class="skeleton skeleton-image w-full mt-xl" style="height: 50px"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('menu-toggle')?.addEventListener('click', () => {
+      document.getElementById('nav-links')?.classList.toggle('active');
+    });
+  </script>
+  
+  <script type="module">
+    import { api } from '/js/api.js';
+    import { formatPrice, getUrlParam, translateCategory } from '/js/utils.js';
+    import { cartManager } from '/js/cart.js';
+    import { toast } from '/js/toast.js';
+
+    const productId = getUrlParam('id');
+    const container = document.getElementById('product-container');
+    const breadcrumb = document.getElementById('breadcrumb');
+
+    if (!productId) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <i class="fas fa-exclamation-circle empty-state-icon"></i>
+          <h3 class="empty-state-title">المنتج غير موجود</h3>
+          <p class="empty-state-text">الرابط غير صحيح أو المنتج غير متوفر.</p>
+          <a href="/pages/products.html" class="btn btn-primary">العودة للمنتجات</a>
+        </div>
+      `;
+    } else {
+      loadProduct();
+    }
+
+    async function loadProduct() {
+      try {
+        const response = await api.products.getById(productId);
+        
+        if (!response.success || !response.data) {
+          throw new Error('Product not found');
+        }
+
+        const product = response.data;
+        document.title = `${product.name} | متجرنا`;
+        
+        breadcrumb.innerHTML = `
+          <a href="/">الرئيسية</a>
+          <span class="breadcrumb-separator">/</span>
+          <a href="/pages/products.html">المنتجات</a>
+          <span class="breadcrumb-separator">/</span>
+          <a href="/pages/products.html?category=${encodeURIComponent(product.category)}">${translateCategory(product.category)}</a>
+          <span class="breadcrumb-separator">/</span>
+          <span class="breadcrumb-current">${product.name}</span>
+        `;
+
+        let galleryHtml = '';
+        if (product.images && product.images.length > 1) {
+          galleryHtml = `
+            <div class="product-gallery mt-md flex gap-sm" style="overflow-x: auto; padding-bottom: 8px;">
+              ${product.images.map((img, idx) => `
+                <img src="${img}" class="gallery-thumb ${idx === 0 ? 'active' : ''}" style="width: 80px; height: 80px; object-fit: cover; border-radius: var(--radius-sm); cursor: pointer; border: 2px solid ${idx === 0 ? 'var(--color-accent)' : 'transparent'}; transition: border 0.3s;" onclick="document.getElementById('main-product-image').src='${img}'; document.querySelectorAll('.gallery-thumb').forEach(el=>el.style.borderColor='transparent'); this.style.borderColor='var(--color-accent)';">
+              `).join('')}
+            </div>
+          `;
+        }
+
+        container.innerHTML = `
+          <div class="product-detail-layout fade-in">
+            <div class="product-image-container">
+              <img src="${product.image}" alt="${product.name}" class="product-image" id="main-product-image">
+              ${galleryHtml}
+            </div>
+            <div class="product-info">
+              <span class="badge badge-outline product-category-badge">${translateCategory(product.category)}</span>
+              <h1 class="product-title">${product.name}</h1>
+              
+              <div class="product-meta">
+                <span class="price-tag">${formatPrice(product.price)}</span>
+                ${product.stock > 0 
+                  ? `<span class="badge badge-success">متوفر: ${product.stock} حبة</span>` 
+                  : '<span class="badge badge-error">نفذت الكمية</span>'}
+              </div>
+              
+              <div class="product-description">
+                ${product.description || 'لا يوجد وصف متاح لهذا المنتج.'}
+              </div>
+              
+              <div class="product-actions">
+                <div class="qty-selector">
+                  <button type="button" class="qty-btn" id="qty-minus" ${product.stock <= 0 ? 'disabled' : ''}>-</button>
+                  <input type="number" id="qty-input" class="qty-input" value="${product.stock > 0 ? 1 : 0}" min="1" max="${product.stock}" ${product.stock <= 0 ? 'disabled' : ''}>
+                  <button type="button" class="qty-btn" id="qty-plus" ${product.stock <= 0 ? 'disabled' : ''}>+</button>
+                </div>
+                
+                <button class="btn btn-primary btn-lg flex-1" id="add-to-cart-btn" ${product.stock <= 0 ? 'disabled' : ''}>
+                  <i class="fas fa-cart-plus"></i> إضافة إلى السلة
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+
+        // Quantity Logic
+        const qtyInput = document.getElementById('qty-input');
+        const btnMinus = document.getElementById('qty-minus');
+        const btnPlus = document.getElementById('qty-plus');
+        const addBtn = document.getElementById('add-to-cart-btn');
+
+        if (product.stock > 0) {
+          btnMinus.addEventListener('click', () => {
+            let val = parseInt(qtyInput.value);
+            if (val > 1) qtyInput.value = val - 1;
+          });
+          
+          btnPlus.addEventListener('click', () => {
+            let val = parseInt(qtyInput.value);
+            if (val < product.stock) qtyInput.value = val + 1;
+          });
+
+          addBtn.addEventListener('click', async () => {
+            const qty = parseInt(qtyInput.value);
+            if (qty > 0 && qty <= product.stock) {
+              const originalText = addBtn.innerHTML;
+              addBtn.innerHTML = '<span class="spinner" style="width:20px;height:20px;border-width:2px;display:inline-block"></span>';
+              addBtn.disabled = true;
+              
+              await cartManager.addItem({
+                id: product.id,
+                name: product.name,
+                price: product.price,
+                image: product.image
+              }, qty);
+              
+              addBtn.innerHTML = originalText;
+              addBtn.disabled = false;
+            }
+          });
+        }
+
+      } catch (error) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <i class="fas fa-exclamation-triangle empty-state-icon"></i>
+            <h3 class="empty-state-title">حدث خطأ</h3>
+            <p class="empty-state-text">لم نتمكن من تحميل تفاصيل المنتج. حاول مرة أخرى.</p>
+            <a href="/pages/products.html" class="btn btn-primary">العودة للمنتجات</a>
+          </div>
+        `;
+      }
+    }
+  </script>
+</body>
+</html>

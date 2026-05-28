@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>المنتجات | متجرنا</title>
+  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/variables.css">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/pages/products.css">
+</head>
+<body>
+  <!-- Shared Navbar -->
+  <nav class="navbar" id="main-navbar">
+    <div class="navbar-container container">
+      <a href="/" class="navbar-brand">🛍️ متجرنا</a>
+      <button class="navbar-menu-toggle" id="menu-toggle" aria-label="القائمة">
+        <i class="fas fa-bars"></i>
+      </button>
+      <ul class="navbar-links" id="nav-links">
+        <li><a href="/">الرئيسية</a></li>
+        <li><a href="/pages/products.html" class="active">المنتجات</a></li>
+        <li><a href="/pages/cart.html" class="navbar-cart">
+          <i class="fas fa-shopping-cart"></i> السلة
+          <span class="navbar-cart-badge cart-count" id="cart-badge">0</span>
+        </a></li>
+        <li><a href="/pages/orders.html">طلباتي</a></li>
+      </ul>
+      <div class="navbar-user" id="navbar-user">
+        <div class="navbar-guest" id="navbar-guest">
+          <a href="/pages/login.html" class="btn btn-outline btn-sm">تسجيل الدخول</a>
+          <a href="/pages/signup.html" class="btn btn-primary btn-sm">حساب جديد</a>
+        </div>
+        <div class="navbar-logged" id="navbar-logged" style="display:none;">
+          <img src="https://ui-avatars.com/api/?name=User&background=ff6b2b&color=fff&size=36" alt="الصورة" id="nav-user-photo" class="navbar-avatar">
+          <span id="nav-user-name">المستخدم</span>
+          <div class="navbar-dropdown">
+            <a href="/pages/profile.html"><i class="fas fa-user-circle"></i> ملفي الشخصي</a>
+            <a href="/pages/orders.html"><i class="fas fa-box"></i> طلباتي</a>
+            <a href="/pages/admin/dashboard.html" id="nav-admin-panel" style="display:none;"><i class="fas fa-user-shield"></i> لوحة الإدارة</a>
+            <a href="#" id="nav-logout-btn"><i class="fas fa-sign-out-alt text-error"></i> تسجيل الخروج</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container section">
+    <div class="breadcrumb">
+      <a href="/">الرئيسية</a>
+      <span class="breadcrumb-separator">/</span>
+      <span class="breadcrumb-current">المنتجات</span>
+    </div>
+
+    <div class="products-header">
+      <h1 class="mb-md">جميع المنتجات</h1>
+      
+      <div class="search-filter-bar">
+        <div class="search-wrapper">
+          <input type="text" id="search-input" class="form-input" placeholder="ابحث عن منتج...">
+          <i class="fas fa-search search-icon"></i>
+        </div>
+        <select id="sort-select" class="form-select" style="min-width: 150px">
+          <option value="newest">الأحدث</option>
+          <option value="price-asc">السعر: من الأقل للأعلى</option>
+          <option value="price-desc">السعر: من الأعلى للأقل</option>
+        </select>
+      </div>
+
+      <div class="filter-chips" id="category-filters">
+        <button class="filter-chip active" data-category="">الكل</button>
+        <button class="filter-chip" data-category="إلكترونيات">إلكترونيات</button>
+        <button class="filter-chip" data-category="ملابس">ملابس</button>
+        <button class="filter-chip" data-category="أحذية">أحذية</button>
+        <button class="filter-chip" data-category="كتب">كتب</button>
+        <button class="filter-chip" data-category="أثاث">أثاث</button>
+        <button class="filter-chip" data-category="مستحضرات تجميل">مستحضرات تجميل</button>
+        <button class="filter-chip" data-category="ألعاب">ألعاب</button>
+      </div>
+    </div>
+
+    <div id="products-grid" class="grid-products">
+      <!-- Will be populated by JS -->
+    </div>
+    
+    <div id="empty-state" class="empty-state hidden">
+      <i class="fas fa-box-open empty-state-icon"></i>
+      <h3 class="empty-state-title">لم يتم العثور على منتجات</h3>
+      <p class="empty-state-text">حاول تغيير كلمات البحث أو الفلتر المستخدم.</p>
+      <button class="btn btn-primary" id="reset-filters">إعادة ضبط الفلاتر</button>
+    </div>
+
+    <div class="pagination" id="pagination">
+      <!-- Will be populated by JS -->
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('menu-toggle')?.addEventListener('click', () => {
+      document.getElementById('nav-links')?.classList.toggle('active');
+    });
+  </script>
+  
+  <script type="module">
+    import { api } from '/js/api.js';
+    import { formatPrice, truncateText, createSkeletonCards, getUrlParam, updateUrlParam, translateCategory } from '/js/utils.js';
+    import { cartManager } from '/js/cart.js';
+
+    let currentPage = 1;
+    let currentCategory = getUrlParam('category') || '';
+    let currentSort = getUrlParam('sort') || 'newest';
+    let currentSearch = getUrlParam('search') || '';
+
+    const grid = document.getElementById('products-grid');
+    const emptyState = document.getElementById('empty-state');
+    const searchInput = document.getElementById('search-input');
+    const sortSelect = document.getElementById('sort-select');
+    const filterChips = document.querySelectorAll('.filter-chip');
+    const resetBtn = document.getElementById('reset-filters');
+
+    // Initialize UI from URL params
+    if (currentSearch) searchInput.value = currentSearch;
+    if (currentSort) sortSelect.value = currentSort;
+    updateChipsUI();
+
+    function updateChipsUI() {
+      filterChips.forEach(chip => {
+        if (chip.dataset.category === currentCategory) {
+          chip.classList.add('active');
+        } else {
+          chip.classList.remove('active');
+        }
+      });
+    }
+
+    async function loadProducts() {
+      grid.innerHTML = createSkeletonCards(8);
+      emptyState.classList.add('hidden');
+      grid.classList.remove('hidden');
+
+      try {
+        const response = await api.products.getAll({
+          category: currentCategory,
+          sort: currentSort,
+          search: currentSearch,
+          page: currentPage,
+          limit: 12
+        });
+
+        const products = response.data.products || [];
+
+        if (!response.success || products.length === 0) {
+          grid.classList.add('hidden');
+          emptyState.classList.remove('hidden');
+          return;
+        }
+
+        grid.innerHTML = '';
+        products.forEach(product => {
+          const card = document.createElement('div');
+          card.className = 'product-card card card-hover fade-in';
+          card.innerHTML = `
+            <div class="product-card-image" style="cursor: pointer" onclick="location.href='/pages/product-details.html?id=${product.id}'">
+              <img src="${product.image}" alt="${product.name}" loading="lazy">
+            </div>
+            <div class="product-card-body">
+              <span class="badge badge-outline product-card-category">${translateCategory(product.category)}</span>
+              <h3 class="product-card-title" style="cursor: pointer" onclick="location.href='/pages/product-details.html?id=${product.id}'">${product.name}</h3>
+              <p class="product-card-desc">${truncateText(product.description, 60)}</p>
+              <div class="product-card-footer">
+                <span class="product-card-price">${formatPrice(product.price)}</span>
+                <button class="btn btn-primary btn-sm add-to-cart-btn" 
+                        data-id="${product.id}" 
+                        data-name="${product.name}" 
+                        data-price="${product.price}" 
+                        data-image="${product.image}">
+                  <i class="fas fa-cart-plus"></i> أضف للسلة
+                </button>
+              </div>
+            </div>
+          `;
+          grid.appendChild(card);
+        });
+
+        // Attach add to cart events
+        document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
+          btn.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            const item = {
+              id: btn.dataset.id,
+              name: btn.dataset.name,
+              price: parseFloat(btn.dataset.price),
+              image: btn.dataset.image,
+              quantity: 1
+            };
+            await cartManager.addItem(item);
+          });
+        });
+
+      } catch (error) {
+        grid.innerHTML = '<p class="text-center text-error w-full">حدث خطأ أثناء تحميل المنتجات.</p>';
+      }
+    }
+
+    // Event Listeners
+    filterChips.forEach(chip => {
+      chip.addEventListener('click', () => {
+        currentCategory = chip.dataset.category;
+        currentPage = 1;
+        updateUrlParam('category', currentCategory);
+        updateChipsUI();
+        loadProducts();
+      });
+    });
+
+    sortSelect.addEventListener('change', (e) => {
+      currentSort = e.target.value;
+      currentPage = 1;
+      updateUrlParam('sort', currentSort);
+      loadProducts();
+    });
+
+    let searchTimeout;
+    searchInput.addEventListener('input', (e) => {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(() => {
+        currentSearch = e.target.value;
+        currentPage = 1;
+        if(currentSearch) updateUrlParam('search', currentSearch);
+        else {
+          const url = new URL(window.location);
+          url.searchParams.delete('search');
+          window.history.pushState({}, '', url);
+        }
+        loadProducts();
+      }, 500);
+    });
+
+    resetBtn.addEventListener('click', () => {
+      currentCategory = '';
+      currentSearch = '';
+      currentSort = 'newest';
+      searchInput.value = '';
+      sortSelect.value = 'newest';
+      window.history.pushState({}, '', window.location.pathname);
+      updateChipsUI();
+      loadProducts();
+    });
+
+    // Initial Load
+    loadProducts();
+  </script>
+</body>
+</html>

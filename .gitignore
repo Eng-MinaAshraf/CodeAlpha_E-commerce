@@ -1,0 +1,12 @@
+node_modules/
+.env
+.DS_Store
+master_fix.js
+apply_user_fixes_2.js
+fix_admin_ids.js
+fix_admin_orders.js
+fix_avatar.js
+fix_checkout.js
+fix_users_sidebar.js
+
+server/serviceAccountKey.json

@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>الدفع وإتمام الطلب | متجرنا</title>
+  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/variables.css">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/pages/checkout.css">
+</head>
+<body>
+  <!-- Shared Navbar -->
+  <nav class="navbar" id="main-navbar">
+    <div class="navbar-container container">
+      <a href="/" class="navbar-brand">🛍️ متجرنا</a>
+      <button class="navbar-menu-toggle" id="menu-toggle" aria-label="القائمة">
+        <i class="fas fa-bars"></i>
+      </button>
+      <ul class="navbar-links" id="nav-links">
+        <li><a href="/">الرئيسية</a></li>
+        <li><a href="/pages/products.html">المنتجات</a></li>
+        <li><a href="/pages/cart.html" class="navbar-cart active">
+          <i class="fas fa-shopping-cart"></i> السلة
+          <span class="navbar-cart-badge cart-count" id="cart-badge">0</span>
+        </a></li>
+      </ul>
+      <div class="navbar-user" id="navbar-user">
+        <div class="navbar-logged" id="navbar-logged" style="display:flex;">
+          <img src="https://ui-avatars.com/api/?name=User&background=ff6b2b&color=fff&size=36" alt="الصورة" id="nav-user-photo" class="navbar-avatar">
+          <span id="nav-user-name">المستخدم</span>
+          <div class="navbar-dropdown">
+            <a href="/pages/orders.html"><i class="fas fa-box"></i> طلباتي</a>
+            <a href="#" id="nav-logout-btn"><i class="fas fa-sign-out-alt"></i> تسجيل الخروج</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container section">
+    <h1 class="page-header">إتمام الطلب</h1>
+
+    <div class="checkout-layout">
+      
+      <!-- Checkout Form -->
+      <div class="checkout-form card fade-in">
+        <h2 class="checkout-section-title"><i class="fas fa-map-marker-alt"></i> عنوان الشحن</h2>
+        
+        <form id="checkout-form">
+          <div class="form-group">
+            <label class="form-label" for="ship-name">الاسم الكامل</label>
+            <input type="text" id="ship-name" class="form-input" required>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label" for="ship-phone">رقم الهاتف</label>
+            <input type="tel" id="ship-phone" class="form-input" dir="ltr" required placeholder="01xxxxxxxxx">
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label" for="ship-city">المدينة / المحافظة</label>
+            <select id="ship-city" class="form-select" required>
+              <option value="">اختر المحافظة</option>
+              <option value="القاهرة">القاهرة</option>
+              <option value="الجيزة">الجيزة</option>
+              <option value="القليوبية">القليوبية</option>
+              <option value="الإسكندرية">الإسكندرية</option>
+              <option value="البحيرة">البحيرة</option>
+              <option value="مطروح">مطروح</option>
+              <option value="المنوفية">المنوفية</option>
+              <option value="الغربية">الغربية</option>
+              <option value="كفر الشيخ">كفر الشيخ</option>
+              <option value="الدقهلية">الدقهلية</option>
+              <option value="دمياط">دمياط</option>
+              <option value="الشرقية">الشرقية</option>
+              <option value="الإسماعيلية">الإسماعيلية</option>
+              <option value="السويس">السويس</option>
+              <option value="بورسعيد">بورسعيد</option>
+              <option value="شمال سيناء">شمال سيناء</option>
+              <option value="جنوب سيناء">جنوب سيناء</option>
+              <option value="الفيوم">الفيوم</option>
+              <option value="بني سويف">بني سويف</option>
+              <option value="المنيا">المنيا</option>
+              <option value="أسيوط">أسيوط</option>
+              <option value="سوهاج">سوهاج</option>
+              <option value="قنا">قنا</option>
+              <option value="الأقصر">الأقصر</option>
+              <option value="أسوان">أسوان</option>
+              <option value="البحر الأحمر">البحر الأحمر</option>
+              <option value="الوادي الجديد">الوادي الجديد</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label" for="ship-address">العنوان التفصيلي</label>
+            <textarea id="ship-address" class="form-textarea" required placeholder="الشارع، رقم العمارة، رقم الشقة..."></textarea>
+          </div>
+
+          <!-- Payment Method -->
+          <h2 class="checkout-section-title mt-xl"><i class="fas fa-lock"></i> طريقة الدفع</h2>
+
+          <div class="payment-options">
+            <label class="payment-option" id="opt-cod">
+              <input type="radio" name="payment" value="cod" checked>
+              <span class="payment-option-content">
+                <i class="fas fa-money-bill-wave" style="color:#22c55e;font-size:1.4rem;"></i>
+                <span>
+                  <span class="payment-option-title">الدفع عند الاستلام</span>
+                  <span class="payment-option-desc">ادفع نقداً عند استلام طلبك</span>
+                </span>
+              </span>
+            </label>
+
+            <label class="payment-option" id="opt-card">
+              <input type="radio" name="payment" value="card">
+              <span class="payment-option-content">
+                <span style="display:flex;gap:5px;align-items:center;">
+                  <i class="fab fa-cc-visa" style="font-size:1.5rem;color:#1a1f71;"></i>
+                  <i class="fab fa-cc-mastercard" style="font-size:1.5rem;color:#eb001b;"></i>
+                </span>
+                <span>
+                  <span class="payment-option-title">بطاقة ائتمانية (وهمي)</span>
+                  <span class="payment-option-desc">محاكاة دفع آمن للتجربة فقط 💳</span>
+                </span>
+              </span>
+            </label>
+          </div>
+
+          <!-- Fake Card Section -->
+          <div id="card-section" style="display:none; margin-top: 1.25rem;">
+            <div style="background: linear-gradient(145deg, #1a1f35, #0f1525); border: 1px solid rgba(99,102,241,0.2); border-radius: 16px; padding: 1.5rem; position: relative; overflow: hidden;">
+              
+              <!-- Decorative card chip -->
+              <div style="position:absolute;top:16px;left:16px;width:40px;height:28px;background:linear-gradient(135deg,#d4af37,#f0d060);border-radius:5px;opacity:0.7;"></div>
+              
+              <div style="display:flex; align-items:center; gap:10px; margin-bottom:1.25rem;">
+                <div style="width:36px;height:36px;background:linear-gradient(135deg,#6366f1,#8b5cf6);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                  <i class="fas fa-shield-alt" style="color:#fff;font-size:0.8rem;"></i>
+                </div>
+                <div>
+                  <div style="font-size:0.85rem;font-weight:700;color:#a5b4fc;">دفع وهمي آمن</div>
+                  <div style="font-size:0.7rem;color:rgba(255,255,255,0.35);">بيانات صورية للتجربة فقط — لا تتطلب بطاقة حقيقية</div>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" style="font-size:0.78rem;color:rgba(255,255,255,0.5);margin-bottom:4px;">اسم حامل البطاقة</label>
+                <input type="text" id="fake-card-name" class="form-input" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;" placeholder="مثال: Ahmed Mohamed">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" style="font-size:0.78rem;color:rgba(255,255,255,0.5);margin-bottom:4px;">رقم البطاقة</label>
+                <div style="position:relative;">
+                  <input type="text" id="fake-card-number" class="form-input" style="font-family:monospace;letter-spacing:3px;font-size:1.05rem;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding-left:50px;" placeholder="4242 4242 4242 4242" maxlength="19">
+                  <i class="fab fa-cc-visa" id="card-type-icon" style="position:absolute;left:15px;top:50%;transform:translateY(-50%);color:rgba(255,255,255,0.15);font-size:1.6rem;transition:color 0.3s;"></i>
+                </div>
+              </div>
+
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+                <div class="form-group">
+                  <label class="form-label" style="font-size:0.78rem;color:rgba(255,255,255,0.5);margin-bottom:4px;">تاريخ الانتهاء</label>
+                  <input type="text" id="fake-card-expiry" class="form-input" style="font-family:monospace;letter-spacing:2px;font-size:1rem;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;text-align:center;" placeholder="MM / YY" maxlength="7">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" style="font-size:0.78rem;color:rgba(255,255,255,0.5);margin-bottom:4px;">رمز CVV</label>
+                  <input type="password" id="fake-card-cvc" class="form-input" style="font-family:monospace;letter-spacing:4px;font-size:1rem;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;text-align:center;" placeholder="•••" maxlength="4">
+                </div>
+              </div>
+
+              <div style="margin-top:0.75rem;padding:0.5rem 0.75rem;background:rgba(99,102,241,0.06);border:1px solid rgba(99,102,241,0.12);border-radius:8px;font-size:0.72rem;color:rgba(255,255,255,0.35);display:flex;align-items:center;gap:6px;">
+                <i class="fas fa-info-circle" style="color:#6366f1;"></i>
+                للاختبار: أي بيانات عشوائية ستعمل — هذا دفع وهمي بالكامل
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block btn-lg mt-xl" id="submit-order-btn">
+            <i class="fas fa-check-circle ml-xs"></i> تأكيد وإتمام الطلب
+          </button>
+        </form>
+      </div>
+
+      <!-- Order Summary -->
+      <div class="order-summary card fade-in">
+        <h3 class="checkout-section-title mb-md">ملخص الطلب</h3>
+        <div class="order-items-preview" id="order-items-preview"></div>
+        
+        <div class="order-total-section">
+          <div class="summary-row">
+            <span>المجموع الفرعي</span>
+            <span id="summary-subtotal">0</span>
+          </div>
+          <div class="summary-row">
+            <span>الشحن</span>
+            <span class="text-success">مجاني</span>
+          </div>
+          <div class="summary-row total">
+            <span>الإجمالي</span>
+            <span id="summary-total">0</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <style>
+    .payment-option {
+      cursor: pointer;
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 12px;
+      padding: 0.875rem 1rem;
+      display: block;
+      margin-bottom: 0.6rem;
+      transition: all 0.2s;
+    }
+    .payment-option:has(input:checked) {
+      border-color: rgba(255,107,43,0.4);
+      background: rgba(255,107,43,0.06);
+    }
+    .payment-option-content { display: flex; align-items: center; gap: 0.875rem; }
+    .payment-option input { display: none; }
+    .payment-option-title { display: block; font-weight: 700; font-size: 0.92rem; }
+    .payment-option-desc { display: block; font-size: 0.75rem; color: rgba(255,255,255,0.45); margin-top:1px; }
+  </style>
+
+  <script type="module">
+    import { authManager } from '/js/auth.js';
+    import { cartManager } from '/js/cart.js';
+    import { api } from '/js/api.js';
+    import { formatPrice } from '/js/utils.js';
+    import { toast } from '/js/toast.js';
+
+    let cartItems = [];
+    let cartTotal = 0;
+
+    // ---- Format card inputs ----
+    document.getElementById('fake-card-number')?.addEventListener('input', function(e) {
+      let v = e.target.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+      let parts = [];
+      for (let i = 0, len = v.length; i < len; i += 4) {
+        parts.push(v.substring(i, i + 4));
+      }
+      e.target.value = parts.length ? parts.join(' ') : v;
+      
+      // Auto-detect card type icon
+      const icon = document.getElementById('card-type-icon');
+      if (v.startsWith('4')) {
+        icon.className = 'fab fa-cc-visa';
+        icon.style.color = '#1a1f71';
+      } else if (v.startsWith('5') || v.startsWith('2')) {
+        icon.className = 'fab fa-cc-mastercard';
+        icon.style.color = '#eb001b';
+      } else {
+        icon.className = 'fab fa-cc-visa';
+        icon.style.color = 'rgba(255,255,255,0.15)';
+      }
+    });
+
+    document.getElementById('fake-card-expiry')?.addEventListener('input', function(e) {
+      let v = e.target.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+      if (v.length > 2) {
+        e.target.value = v.substring(0, 2) + ' / ' + v.substring(2, 4);
+      }
+    });
+
+    // ---- Auth & Cart ----
+    authManager.onAuthChange(async (user) => {
+      if (!user) {
+        window.location.href = '/pages/login.html?redirect=/pages/checkout.html';
+        return;
+      }
+      
+      // Auto-fill from profile
+      document.getElementById('ship-name').value = user.user_metadata?.full_name || user.displayName || '';
+      
+      try {
+        // Fetch profile data for phone/address
+        const token = await authManager.getIdToken();
+        const profileRes = await fetch('/api/auth/profile', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const profileData = await profileRes.json();
+        if (profileData.success && profileData.data) {
+          const p = profileData.data;
+          if (p.name) document.getElementById('ship-name').value = p.name;
+          if (p.phone) document.getElementById('ship-phone').value = p.phone;
+          if (p.address) document.getElementById('ship-address').value = p.address;
+        }
+      } catch(e) {}
+
+      try {
+        const response = await api.cart.get();
+        cartItems = response.data || [];
+        if (cartItems.length === 0) {
+          toast.error('السلة فارغة، جاري التوجيه...');
+          setTimeout(() => window.location.href = '/pages/products.html', 1500);
+          return;
+        }
+        renderSummary();
+      } catch (err) {
+        toast.error('حدث خطأ في جلب بيانات السلة');
+      }
+    });
+
+    function renderSummary() {
+      const container = document.getElementById('order-items-preview');
+      cartTotal = 0;
+      container.innerHTML = cartItems.map(item => {
+        cartTotal += (item.price * item.quantity);
+        return `
+          <div class="order-item-mini">
+            <img src="${item.image}" alt="">
+            <div class="order-item-mini-info">
+              <span class="order-item-mini-name">${item.name}</span>
+              <span class="order-item-mini-qty">الكمية: ${item.quantity}</span>
+            </div>
+            <span class="order-item-mini-price">${formatPrice(item.price * item.quantity)}</span>
+          </div>
+        `;
+      }).join('');
+      document.getElementById('summary-subtotal').textContent = formatPrice(cartTotal);
+      document.getElementById('summary-total').textContent = formatPrice(cartTotal);
+    }
+
+    // ---- Payment Toggle ----
+    document.querySelectorAll('input[name="payment"]').forEach(radio => {
+      radio.addEventListener('change', (e) => {
+        document.getElementById('card-section').style.display =
+          e.target.value === 'card' ? 'block' : 'none';
+      });
+    });
+
+    // ---- Form Submit ----
+    document.getElementById('checkout-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const paymentMethod = document.querySelector('input[name="payment"]:checked').value;
+      const submitBtn     = document.getElementById('submit-order-btn');
+      const originalHTML  = submitBtn.innerHTML;
+
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span class="spinner" style="width:18px;height:18px;border-width:2px;display:inline-block;margin-left:8px;vertical-align:middle;"></span> جاري معالجة الطلب...';
+
+      try {
+        if (paymentMethod === 'card') {
+          const cardNum = document.getElementById('fake-card-number').value.trim();
+          const cardExp = document.getElementById('fake-card-expiry').value.trim();
+          const cardCvc = document.getElementById('fake-card-cvc').value.trim();
+          
+          if (!cardNum || !cardExp || !cardCvc) {
+            toast.error('يرجى تعبئة جميع بيانات البطاقة');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = originalHTML;
+            return;
+          }
+
+          // Simulate payment processing
+          await new Promise(r => setTimeout(r, 2000));
+          
+          const fakePaymentRef = 'TX_' + Date.now() + '_' + Math.floor(Math.random() * 10000);
+          await processOrder('card', fakePaymentRef);
+        } else {
+          await processOrder('cod', null);
+        }
+      } catch (err) {
+        toast.error(err.message || 'حدث خطأ أثناء إتمام الطلب');
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalHTML;
+      }
+    });
+
+    async function processOrder(paymentType, paymentRef) {
+      const shipping = {
+        name:    document.getElementById('ship-name').value.trim(),
+        phone:   document.getElementById('ship-phone').value.trim(),
+        city:    document.getElementById('ship-city').value,
+        address: document.getElementById('ship-address').value.trim()
+      };
+      const orderData = {
+        items: cartItems.map(item => ({
+          productId: item.productId || item.id,
+          name: item.name, price: item.price,
+          quantity: item.quantity, image: item.image
+        })),
+        shipping,
+        payment_method: paymentType,
+        payment_ref: paymentRef || null
+      };
+      const response = await api.orders.create(orderData);
+      if (response.success) {
+        toast.success(paymentType === 'card' ? '✅ تم الدفع بنجاح وتأكيد طلبك!' : '✅ تم تأكيد طلبك بنجاح!');
+        try { cartManager.listeners.forEach(l => l(0)); } catch(_) {}
+        setTimeout(() => window.location.href = '/pages/orders.html', 2000);
+      } else {
+        throw new Error(response.message || 'فشل إنشاء الطلب');
+      }
+    }
+  </script>
+</body>
+</html>

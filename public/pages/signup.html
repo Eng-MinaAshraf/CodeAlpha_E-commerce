@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>إنشاء حساب | متجرنا</title>
+  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/variables.css">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/pages/auth.css">
+</head>
+<body>
+  <!-- Shared Navbar -->
+  <nav class="navbar" id="main-navbar">
+    <div class="navbar-container container">
+      <a href="/" class="navbar-brand">🛍️ متجرنا</a>
+      <button class="navbar-menu-toggle" id="menu-toggle" aria-label="القائمة">
+        <i class="fas fa-bars"></i>
+      </button>
+      <ul class="navbar-links" id="nav-links">
+        <li><a href="/">الرئيسية</a></li>
+        <li><a href="/pages/products.html">المنتجات</a></li>
+        <li><a href="/pages/cart.html" class="navbar-cart">
+          <i class="fas fa-shopping-cart"></i> السلة
+          <span class="navbar-cart-badge cart-count" id="cart-badge">0</span>
+        </a></li>
+      </ul>
+      <div class="navbar-user" id="navbar-user">
+        <div class="navbar-guest" id="navbar-guest">
+          <a href="/pages/login.html" class="btn btn-outline btn-sm">تسجيل الدخول</a>
+          <a href="/pages/signup.html" class="btn btn-primary btn-sm active">حساب جديد</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="auth-container">
+    <div class="auth-card card-glass fade-in">
+      <h2 class="auth-title">إنشاء حساب جديد</h2>
+      
+      <form id="signup-form">
+        <div class="form-group">
+          <label for="name" class="form-label">الاسم الكامل</label>
+          <input type="text" id="name" class="form-input" placeholder="أدخل اسمك الكامل" required minlength="2">
+        </div>
+
+        <div class="form-group">
+          <label for="email" class="form-label">البريد الإلكتروني</label>
+          <input type="email" id="email" class="form-input" placeholder="أدخل بريدك الإلكتروني" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="password" class="form-label">كلمة المرور</label>
+          <div class="password-input-wrapper">
+            <input type="password" id="password" class="form-input" placeholder="أدخل كلمة المرور" required minlength="6">
+            <button type="button" class="auth-toggle-password" id="toggle-pwd" tabindex="-1">
+              <i class="fas fa-eye"></i>
+            </button>
+          </div>
+          <div class="password-strength">
+            <div class="password-strength-bar" id="pwd-strength-bar"></div>
+          </div>
+          <span class="password-strength-text" id="pwd-strength-text">كلمة المرور يجب أن لا تقل عن 6 أحرف</span>
+        </div>
+
+        <div class="form-group">
+          <label for="confirm-password" class="form-label">تأكيد كلمة المرور</label>
+          <div class="password-input-wrapper">
+            <input type="password" id="confirm-password" class="form-input" placeholder="أعد إدخال كلمة المرور" required>
+            <button type="button" class="auth-toggle-password" id="toggle-confirm-pwd" tabindex="-1">
+              <i class="fas fa-eye"></i>
+            </button>
+          </div>
+          <div class="form-error hidden" id="pwd-match-error">كلمات المرور غير متطابقة</div>
+        </div>
+        
+        <div class="checkbox-group">
+          <input type="checkbox" id="terms" required>
+          <label for="terms">أوافق على <a href="#" style="color:var(--color-accent)">الشروط والأحكام</a></label>
+        </div>
+        
+        <button type="submit" class="btn btn-primary btn-block btn-lg mt-md" id="submit-btn">
+          إنشاء الحساب
+        </button>
+      </form>
+      
+      <div class="auth-divider">أو</div>
+      
+      <div class="social-buttons" style="flex-direction: column;">
+        <button type="button" class="btn btn-outline btn-block" id="google-btn" style="border-color: #ddd; color: var(--color-text-primary);">
+          <i class="fab fa-google mr-sm" style="color: #ea4335;"></i> المتابعة باستخدام حساب جوجل
+        </button>
+      </div>
+      
+      <div class="auth-footer">
+        لديك حساب بالفعل؟ <a href="/pages/login.html">سجل الدخول</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('menu-toggle')?.addEventListener('click', () => {
+      document.getElementById('nav-links')?.classList.toggle('active');
+    });
+
+    // Password toggles UI
+    const setupToggle = (inputId, btnId) => {
+      const input = document.getElementById(inputId);
+      const btn = document.getElementById(btnId);
+      btn.addEventListener('click', () => {
+        const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
+        input.setAttribute('type', type);
+        btn.innerHTML = type === 'password' ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
+      });
+    };
+    setupToggle('password', 'toggle-pwd');
+    setupToggle('confirm-password', 'toggle-confirm-pwd');
+  </script>
+  
+  <script type="module">
+    import { supabase } from '/js/supabase.js';
+    import { authManager } from '/js/auth.js';
+    import { toast } from '/js/toast.js';
+    import { api } from '/js/api.js';
+    import { getPasswordStrength, validateEmail } from '/js/utils.js';
+
+    if (authManager.getCurrentUser()) {
+      window.location.href = '/pages/products.html';
+    }
+
+    const form = document.getElementById('signup-form');
+    const pwdInput = document.getElementById('password');
+    const confirmPwdInput = document.getElementById('confirm-password');
+    const matchError = document.getElementById('pwd-match-error');
+    const strengthBar = document.getElementById('pwd-strength-bar');
+    const strengthText = document.getElementById('pwd-strength-text');
+    const submitBtn = document.getElementById('submit-btn');
+
+    // Real-time password strength
+    pwdInput.addEventListener('input', () => {
+      const val = pwdInput.value;
+      strengthBar.className = 'password-strength-bar';
+      if (!val) {
+        strengthText.textContent = "كلمة المرور يجب أن لا تقل عن 6 أحرف";
+        return;
+      }
+      
+      const strength = getPasswordStrength(val);
+      strengthBar.classList.add(`strength-${strength}`);
+      
+      if (strength === 'weak') strengthText.textContent = 'ضعيفة';
+      else if (strength === 'medium') strengthText.textContent = 'متوسطة';
+      else if (strength === 'strong') strengthText.textContent = 'قوية';
+      
+      checkMatch();
+    });
+
+    const checkMatch = () => {
+      if (confirmPwdInput.value && pwdInput.value !== confirmPwdInput.value) {
+        matchError.classList.remove('hidden');
+        confirmPwdInput.classList.add('error');
+      } else {
+        matchError.classList.add('hidden');
+        confirmPwdInput.classList.remove('error');
+      }
+    };
+    confirmPwdInput.addEventListener('input', checkMatch);
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const name = document.getElementById('name').value.trim();
+      // تنظيف البريد الإلكتروني من أي علامات مخفية لتوجيه النص العربي (RTL Marks)
+      const rawEmail = document.getElementById('email').value.trim();
+      const email = rawEmail.replace(/[^\x00-\x7F]/g, "");
+      
+      const password = pwdInput.value;
+      const confirmPassword = confirmPwdInput.value;
+      const terms = document.getElementById('terms').checked;
+      
+      if (!validateEmail(email)) {
+        toast.error('البريد الإلكتروني غير صالح');
+        return;
+      }
+      if (password.length < 6) {
+        toast.error('كلمة المرور يجب أن تتكون من 6 أحرف على الأقل');
+        return;
+      }
+      if (password !== confirmPassword) {
+        toast.error('كلمات المرور غير متطابقة');
+        return;
+      }
+      if (!terms) {
+        toast.error('يجب الموافقة على الشروط والأحكام');
+        return;
+      }
+      
+      const originalText = submitBtn.innerHTML;
+      submitBtn.innerHTML = '<span class="spinner" style="width:20px;height:20px;border-width:2px;display:inline-block"></span> جاري الإنشاء...';
+      submitBtn.disabled = true;
+
+      try {
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: { full_name: name }
+          }
+        });
+        
+        if (error) throw error;
+        
+        try {
+          await api.auth.createProfile({ name, email });
+        } catch(apiErr) {
+          console.warn("Backend profile save failed", apiErr);
+        }
+        
+        toast.success('تم إنشاء الحساب بنجاح! جاري التوجيه...');
+        setTimeout(() => {
+          window.location.href = '/pages/products.html';
+        }, 1500);
+      } catch (error) {
+        console.error(error);
+        if (error.message.includes('User already registered')) {
+          toast.error('البريد الإلكتروني مسجل بالفعل');
+        } else {
+          toast.error('حدث خطأ أثناء إنشاء الحساب: ' + error.message);
+        }
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+      }
+    });
+
+    const googleBtn = document.getElementById('google-btn');
+    if (googleBtn) {
+      googleBtn.addEventListener('click', async () => {
+        try {
+          const { error } = await supabase.auth.signInWithOAuth({
+            provider: 'google',
+            options: {
+              redirectTo: window.location.origin + '/pages/products.html'
+            }
+          });
+          if (error) throw error;
+        } catch (error) {
+          console.error(error);
+          toast.error('حدث خطأ أثناء الدخول بحساب جوجل');
+        }
+      });
+    }
+  </script>
+</body>
+</html>

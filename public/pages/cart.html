@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>سلة المشتريات | متجرنا</title>
+  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/variables.css">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/pages/cart.css">
+</head>
+<body>
+  <!-- Shared Navbar -->
+  <nav class="navbar" id="main-navbar">
+    <div class="navbar-container container">
+      <a href="/" class="navbar-brand">🛍️ متجرنا</a>
+      <button class="navbar-menu-toggle" id="menu-toggle" aria-label="القائمة">
+        <i class="fas fa-bars"></i>
+      </button>
+      <ul class="navbar-links" id="nav-links">
+        <li><a href="/">الرئيسية</a></li>
+        <li><a href="/pages/products.html">المنتجات</a></li>
+        <li><a href="/pages/cart.html" class="navbar-cart active">
+          <i class="fas fa-shopping-cart"></i> السلة
+          <span class="navbar-cart-badge cart-count" id="cart-badge">0</span>
+        </a></li>
+        <li><a href="/pages/orders.html">طلباتي</a></li>
+      </ul>
+      <div class="navbar-user" id="navbar-user">
+        <div class="navbar-guest" id="navbar-guest">
+          <a href="/pages/login.html" class="btn btn-outline btn-sm">تسجيل الدخول</a>
+          <a href="/pages/signup.html" class="btn btn-primary btn-sm">حساب جديد</a>
+        </div>
+        <div class="navbar-logged" id="navbar-logged" style="display:none;">
+          <img src="https://ui-avatars.com/api/?name=User&background=ff6b2b&color=fff&size=36" alt="الصورة" id="nav-user-photo" class="navbar-avatar">
+          <span id="nav-user-name">المستخدم</span>
+          <div class="navbar-dropdown">
+            <a href="/pages/profile.html"><i class="fas fa-user-circle"></i> ملفي الشخصي</a>
+            <a href="/pages/orders.html"><i class="fas fa-box"></i> طلباتي</a>
+            <a href="/pages/admin/dashboard.html" id="nav-admin-panel" style="display:none;"><i class="fas fa-user-shield"></i> لوحة الإدارة</a>
+            <a href="#" id="nav-logout-btn"><i class="fas fa-sign-out-alt text-error"></i> تسجيل الخروج</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container section">
+    <h1 class="page-header">سلة المشتريات</h1>
+
+    <div id="cart-content">
+      <!-- Loading State -->
+      <div class="flex-center py-3xl">
+        <div class="spinner spinner-lg"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('menu-toggle')?.addEventListener('click', () => {
+      document.getElementById('nav-links')?.classList.toggle('active');
+    });
+  </script>
+  
+  <script type="module">
+    import { cartManager } from '/js/cart.js';
+    import { formatPrice, customConfirm } from '/js/utils.js';
+    import { authManager } from '/js/auth.js';
+
+    const container = document.getElementById('cart-content');
+
+    async function renderCart() {
+      const items = await cartManager.getItems();
+      
+      if (!items || items.length === 0) {
+        container.innerHTML = `
+          <div class="empty-cart-state fade-in">
+            <div class="empty-cart-icon-wrapper">
+              <i class="fas fa-shopping-cart"></i>
+            </div>
+            <h3 class="empty-cart-title">سلة التسوق فارغة</h3>
+            <p class="empty-cart-desc">يبدو أنك لم تقم بإضافة أي منتجات إلى السلة بعد.<br>اكتشف أحدث العروض والمنتجات المميزة لدينا!</p>
+            <a href="/pages/products.html" class="btn btn-primary btn-lg empty-cart-btn">
+              <i class="fas fa-store ml-xs"></i> تصفح المنتجات
+            </a>
+          </div>
+        `;
+        return;
+      }
+
+      let subtotal = 0;
+      const itemsHtml = items.map(item => {
+        const total = item.price * item.quantity;
+        subtotal += total;
+        return `
+          <div class="cart-item card">
+            <img src="${item.image}" alt="${item.name}" class="cart-item-image">
+            <div class="cart-item-info">
+              <a href="/pages/product-details.html?id=${item.productId || item.id}" class="cart-item-name">${item.name}</a>
+              <div class="cart-item-price">${formatPrice(item.price)}</div>
+            </div>
+            
+            <div class="qty-selector">
+              <button class="qty-btn update-qty" data-id="${item.productId || item.id}" data-action="minus">-</button>
+              <input type="number" class="qty-input" value="${item.quantity}" readonly>
+              <button class="qty-btn update-qty" data-id="${item.productId || item.id}" data-action="plus">+</button>
+            </div>
+            
+            <div class="cart-item-total">${formatPrice(total)}</div>
+            
+            <button class="btn btn-ghost cart-item-remove remove-item" data-id="${item.productId || item.id}" title="حذف">
+              <i class="fas fa-trash-alt"></i>
+            </button>
+          </div>
+        `;
+      }).join('');
+
+      container.innerHTML = `
+        <div class="cart-layout fade-in">
+          <div class="cart-items">
+            ${itemsHtml}
+            
+            <div class="flex-between mt-md">
+              <button class="btn btn-ghost text-error" id="clear-cart-btn">
+                <i class="fas fa-trash"></i> إفراغ السلة بالكامل
+              </button>
+            </div>
+          </div>
+          
+          <div class="cart-summary card">
+            <h3 class="cart-summary-title">ملخص الطلب</h3>
+            <div class="cart-summary-row">
+              <span>المجموع الفرعي:</span>
+              <span>${formatPrice(subtotal)}</span>
+            </div>
+            <div class="cart-summary-row text-success">
+              <span>الشحن:</span>
+              <span>مجاني</span>
+            </div>
+            <div class="cart-summary-row total-row">
+              <span>الإجمالي:</span>
+              <span class="cart-summary-total">${formatPrice(subtotal)}</span>
+            </div>
+            
+            <div class="cart-actions">
+              <button class="btn btn-primary btn-block btn-lg" id="checkout-btn">
+                متابعة الدفع
+              </button>
+              <a href="/pages/products.html" class="btn btn-outline btn-block">
+                متابعة التسوق
+              </a>
+            </div>
+          </div>
+        </div>
+      `;
+
+      // Event Listeners
+      document.querySelectorAll('.update-qty').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          const id = e.target.dataset.id;
+          const action = e.target.dataset.action;
+          const item = items.find(i => (i.productId || i.id) === id);
+          if(item) {
+            let newQty = action === 'plus' ? item.quantity + 1 : item.quantity - 1;
+            // set target button to loading state visually if needed, but operation is fast
+            await cartManager.updateQuantity(id, newQty);
+            renderCart();
+          }
+        });
+      });
+
+      document.querySelectorAll('.remove-item').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          const id = e.currentTarget.dataset.id;
+          await cartManager.removeItem(id);
+          renderCart();
+        });
+      });
+
+      document.getElementById('clear-cart-btn')?.addEventListener('click', () => {
+        customConfirm('إفراغ السلة', 'هل أنت متأكد من إفراغ السلة بالكامل؟ لا يمكن التراجع عن هذا الإجراء.', async () => {
+          await cartManager.clear();
+          renderCart();
+        });
+      });
+
+      document.getElementById('checkout-btn')?.addEventListener('click', () => {
+        if (!authManager.getCurrentUser()) {
+          // Must login to checkout
+          window.location.href = '/pages/login.html?redirect=/pages/checkout.html';
+        } else {
+          window.location.href = '/pages/checkout.html';
+        }
+      });
+    }
+
+    // Subscribe to cart changes to re-render whenever data is loaded or updated
+    cartManager.onChange(() => {
+      renderCart();
+    });
+
+  </script>
+</body>
+</html>

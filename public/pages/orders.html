@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>طلباتي | متجرنا</title>
+  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/variables.css">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/pages/orders.css">
+</head>
+<body>
+  <!-- Shared Navbar -->
+  <nav class="navbar" id="main-navbar">
+    <div class="navbar-container container">
+      <a href="/" class="navbar-brand">🛍️ متجرنا</a>
+      <button class="navbar-menu-toggle" id="menu-toggle" aria-label="القائمة">
+        <i class="fas fa-bars"></i>
+      </button>
+      <ul class="navbar-links" id="nav-links">
+        <li><a href="/">الرئيسية</a></li>
+        <li><a href="/pages/products.html">المنتجات</a></li>
+        <li><a href="/pages/cart.html" class="navbar-cart">
+          <i class="fas fa-shopping-cart"></i> السلة
+          <span class="navbar-cart-badge cart-count" id="cart-badge">0</span>
+        </a></li>
+        <li><a href="/pages/orders.html" class="active">طلباتي</a></li>
+      </ul>
+      <div class="navbar-user" id="navbar-user">
+        <div class="navbar-logged" id="navbar-logged" style="display:flex;">
+          <img src="https://ui-avatars.com/api/?name=User&background=ff6b2b&color=fff&size=36" alt="الصورة" id="nav-user-photo" class="navbar-avatar">
+          <span id="nav-user-name">المستخدم</span>
+          <div class="navbar-dropdown">
+            <a href="/pages/profile.html"><i class="fas fa-user-circle"></i> ملفي الشخصي</a>
+            <a href="/pages/orders.html" class="active"><i class="fas fa-box"></i> طلباتي</a>
+            <a href="/pages/admin/dashboard.html" id="nav-admin-panel" style="display:none;"><i class="fas fa-user-shield"></i> لوحة الإدارة</a>
+            <a href="#" id="nav-logout-btn"><i class="fas fa-sign-out-alt text-error"></i> تسجيل الخروج</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container section">
+    <h1 class="page-header">طلباتي السابقة</h1>
+
+    <div id="orders-content" class="orders-list">
+      <!-- Loading State -->
+      <div class="flex-center py-3xl">
+        <div class="spinner spinner-lg"></div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { authManager } from '/js/auth.js';
+    import { api } from '/js/api.js';
+    import { formatPrice, formatDate, customConfirm } from '/js/utils.js';
+    import { toast } from '/js/toast.js';
+
+    const container = document.getElementById('orders-content');
+
+    // Must be logged in
+    authManager.onAuthChange(async (user) => {
+      if (!user) {
+        window.location.href = '/pages/login.html?redirect=/pages/orders.html';
+        return;
+      }
+      loadOrders();
+    });
+
+    const getStatusBadge = (status) => {
+      const map = {
+        'pending': { class: 'status-pending', text: 'قيد المراجعة', icon: 'fa-clock' },
+        'processing': { class: 'status-processing', text: 'جاري التجهيز', icon: 'fa-cog fa-spin' },
+        'shipped': { class: 'status-shipped', text: 'تم الشحن', icon: 'fa-truck' },
+        'delivered': { class: 'status-delivered', text: 'تم التوصيل', icon: 'fa-check-circle' },
+        'cancelled': { class: 'status-cancelled', text: 'ملغي', icon: 'fa-times-circle' }
+      };
+      const info = map[status] || map['pending'];
+      return `<span class="badge ${info.class}"><i class="fas ${info.icon} ml-xs"></i> ${info.text}</span>`;
+    };
+
+    async function loadOrders() {
+      try {
+        const response = await api.orders.getAll();
+        
+        if (!response.success || response.data.length === 0) {
+          container.innerHTML = `
+            <div class="empty-orders-state fade-in">
+              <div class="empty-orders-icon-wrapper">
+                <i class="fas fa-box-open"></i>
+              </div>
+              <h3 class="empty-orders-title">لا توجد طلبات سابقة</h3>
+              <p class="empty-orders-desc">يبدو أنك لم تقم بإجراء أي طلبات حتى الآن.<br>تصفح منتجاتنا المميزة وابدأ التسوق الآن!</p>
+              <a href="/pages/products.html" class="btn btn-primary btn-lg empty-orders-btn">
+                <i class="fas fa-store ml-xs"></i> ابدأ التسوق
+              </a>
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = response.data.map(order => {
+          const orderItems = order.order_items || [];
+          
+          const getFirstImg = (img) => img ? img.split(',')[0] : '/images/placeholder.jpg';
+
+          const itemsPreview = orderItems.slice(0, 3).map(item => 
+            `<img src="${getFirstImg(item.products?.image)}" alt="" class="order-item-thumb">`
+          ).join('');
+          
+          const moreItemsCount = orderItems.length - 3;
+          const moreItemsHtml = moreItemsCount > 0 ? `<div class="order-more">+${moreItemsCount}</div>` : '';
+
+          const itemsTableHtml = orderItems.map(item => `
+            <tr>
+              <td>
+                <div class="table-item-info">
+                  <img src="${getFirstImg(item.products?.image)}" alt="" class="table-item-img">
+                  <span>${item.name}</span>
+                </div>
+              </td>
+              <td>${item.quantity}</td>
+              <td>${formatPrice(item.price)}</td>
+              <td><strong>${formatPrice(item.price * item.quantity)}</strong></td>
+            </tr>
+          `).join('');
+
+          const statusOrder = ['pending', 'processing', 'shipped', 'delivered'];
+          const currentStatusIndex = statusOrder.indexOf(order.status);
+          
+          let trackerHtml = '';
+          if (order.status !== 'cancelled' && currentStatusIndex !== -1) {
+            trackerHtml = `
+              <div class="order-tracker">
+                <div class="tracker-step ${currentStatusIndex >= 0 ? 'active' : ''}">
+                  <div class="tracker-icon"><i class="fas fa-clipboard-check"></i></div>
+                  <div class="tracker-label">مراجعة</div>
+                </div>
+                <div class="tracker-line ${currentStatusIndex >= 1 ? 'active' : ''}"></div>
+                <div class="tracker-step ${currentStatusIndex >= 1 ? 'active' : ''}">
+                  <div class="tracker-icon"><i class="fas fa-box-open"></i></div>
+                  <div class="tracker-label">تجهيز</div>
+                </div>
+                <div class="tracker-line ${currentStatusIndex >= 2 ? 'active' : ''}"></div>
+                <div class="tracker-step ${currentStatusIndex >= 2 ? 'active' : ''}">
+                  <div class="tracker-icon"><i class="fas fa-shipping-fast"></i></div>
+                  <div class="tracker-label">شحن</div>
+                </div>
+                <div class="tracker-line ${currentStatusIndex >= 3 ? 'active' : ''}"></div>
+                <div class="tracker-step ${currentStatusIndex >= 3 ? 'active' : ''}">
+                  <div class="tracker-icon"><i class="fas fa-home"></i></div>
+                  <div class="tracker-label">توصيل</div>
+                </div>
+              </div>
+            `;
+          }
+
+          return `
+            <div class="order-card card fade-in">
+              <div class="order-header">
+                <div class="order-id-date">
+                  <span class="order-id">رقم الطلب: ${order.order_id || order.id}</span>
+                  <span class="order-date">${formatDate(order.created_at)}</span>
+                </div>
+                ${getStatusBadge(order.status)}
+              </div>
+              
+              <div class="order-body">
+                ${trackerHtml}
+                <div class="order-items-preview">
+                  ${itemsPreview}
+                  ${moreItemsHtml}
+                </div>
+                
+                <div class="order-footer">
+                  <div class="order-total-price">
+                    الإجمالي: ${formatPrice(order.total)}
+                  </div>
+                  <div class="order-actions">
+                    ${order.status === 'pending' ? `<button class="btn btn-outline btn-sm cancel-order-btn text-error border-error hover-bg-error hover-text-white" data-id="${order.id}">إلغاء الطلب</button>` : ''}
+                    <button class="btn btn-outline btn-sm order-details-toggle" data-target="details-${order.id}">
+                      التفاصيل <i class="fas fa-chevron-down"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Expandable Details -->
+              <div class="order-details-content" id="details-${order.id}">
+                <table class="order-items-table">
+                  <thead>
+                    <tr>
+                      <th>المنتج</th>
+                      <th>الكمية</th>
+                      <th>السعر</th>
+                      <th>الإجمالي</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${itemsTableHtml}
+                  </tbody>
+                </table>
+                
+                <div class="order-shipping-details">
+                  <h4><i class="fas fa-map-marker-alt ml-xs"></i> بيانات الشحن</h4>
+                  <p><strong>الاسم:</strong> ${order.shipping_name}</p>
+                  <p><strong>الهاتف:</strong> ${order.shipping_phone}</p>
+                  <p><strong>العنوان:</strong> ${order.shipping_address}، ${order.shipping_city}</p>
+                </div>
+                
+                ${order.delivery_staff_id ? `
+                <div class="order-shipping-details mt-md fade-in" style="border-color: rgba(34, 197, 94, 0.3); background: rgba(34, 197, 94, 0.03);">
+                  <h4><i class="fas fa-motorcycle ml-xs text-success"></i> ${order.status === 'delivered' ? 'المندوب الذي قام بالتوصيل' : 'مندوب التوصيل الخاص بك'}</h4>
+                  <p><strong>الاسم:</strong> ${order.delivery_staff_name}</p>
+                  <div class="flex-between items-center flex-wrap gap-sm">
+                    <p class="mb-0"><strong>الهاتف:</strong> <span dir="ltr" style="display:inline-block">${order.delivery_staff_phone || 'لا يوجد رقم'}</span></p>
+                    ${order.delivery_staff_phone ? `
+                    <a href="tel:${order.delivery_staff_phone}" class="btn btn-sm hover-bg-success" style="background: var(--success-color); color: white; border-radius: var(--radius-full); padding: 0.25rem 1rem;">
+                      <i class="fas fa-phone-alt ml-xs"></i> اتصال
+                    </a>
+                    ` : ''}
+                  </div>
+                </div>
+                ` : ''}
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        // Attach toggle events
+        document.querySelectorAll('.order-details-toggle').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const targetId = e.currentTarget.dataset.target;
+            const content = document.getElementById(targetId);
+            
+            content.classList.toggle('active');
+            e.currentTarget.classList.toggle('expanded');
+          });
+        });
+
+        // Attach cancel events
+        document.querySelectorAll('.cancel-order-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const orderId = e.currentTarget.dataset.id;
+            customConfirm('إلغاء الطلب', 'هل أنت متأكد من رغبتك في إلغاء هذا الطلب؟', async () => {
+              try {
+                const res = await api.orders.cancel(orderId);
+                if(res.success) {
+                  toast.success('تم إلغاء الطلب بنجاح');
+                  loadOrders();
+                } else {
+                  throw new Error(res.message);
+                }
+              } catch(err) {
+                toast.error(err.message || 'حدث خطأ أثناء إلغاء الطلب');
+              }
+            });
+          });
+        });
+
+      } catch (error) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <i class="fas fa-exclamation-triangle empty-state-icon text-error"></i>
+            <h3 class="empty-state-title">حدث خطأ</h3>
+            <p class="empty-state-text">لم نتمكن من تحميل طلباتك. يرجى المحاولة لاحقاً.</p>
+          </div>
+        `;
+      }
+    }
+  </script>
+</body>
+</html>
