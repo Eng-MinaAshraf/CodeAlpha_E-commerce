@@ -160,6 +160,19 @@
       </div>
       <form id="assign-delivery-form">
         <input type="hidden" id="assign-order-id">
+        <div class="form-group mt-md">
+          <label class="form-label" for="delivery-staff-select">اختر المندوب</label>
+          <select id="delivery-staff-select" class="form-select" required>
+            <option value="">جاري التحميل...</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block mt-lg" id="submit-assign-btn">
+          إسناد الطلب للمندوب
+        </button>
+      </form>
+    </div>
+  </div>
+
   <script type="module">
     import { authManager } from '/js/auth.js';
     import { toast } from '/js/toast.js';
@@ -243,10 +256,12 @@
                   ${getStatusSelect(order.id, order.status)}
                 </td>
                 <td>
-                  ${order.delivery_staff_id 
-                    ? `<div class="badge badge-success mb-xs"><i class="fas fa-motorcycle"></i> ${order.delivery_staff_name}</div><div class="text-xs text-secondary">${order.delivery_staff_phone || ''}</div>`
-                    : `<button class="btn btn-outline btn-sm assign-delivery-btn" data-id="${order.id}">إسناد لمندوب</button>`
-                  }
+                  ${order.status === 'cancelled'
+    ? '<span class="text-secondary">-</span>'
+    : (order.delivery_staff_id 
+        ? `<div class="badge badge-success mb-xs"><i class="fas fa-motorcycle"></i> ${order.delivery_staff_name}</div><div class="text-xs text-secondary">${order.delivery_staff_phone || ''}</div>`
+        : `<button class="btn btn-outline btn-sm assign-delivery-btn" data-id="${order.id}">إسناد لمندوب</button>`)
+}
                 </td>
               </tr>
             `).join('');

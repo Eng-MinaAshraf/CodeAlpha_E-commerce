@@ -216,6 +216,14 @@
           <label class="form-label" for="edit-del-phone">رقم الهاتف</label>
           <input type="tel" id="edit-staff-phone" class="form-input" required>
         </div>
+        <div class="form-group">
+          <label class="form-label" for="edit-staff-email">البريد الإلكتروني</label>
+          <input type="email" id="edit-staff-email" class="form-input" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="edit-staff-password">كلمة المرور الافتراضية / الحديثة</label>
+          <input type="text" id="edit-staff-password" class="form-input" required>
+        </div>
         <button type="submit" class="btn btn-primary btn-block mt-lg" id="edit-submit-staff-btn">
           حفظ التعديلات
         </button>
@@ -225,7 +233,7 @@
 
   <!-- Credentials Result Modal -->
   <div class="modal-overlay" id="credentials-modal">
-    <div class="modal-content admin-card text-center">
+    <div class="modal-content admin-card text-center" style="max-width: 480px;">
       <div class="modal-header border-none mb-0">
         <button class="modal-close" onclick="document.getElementById('credentials-modal').classList.remove('active')">
           <i class="fas fa-times"></i>
@@ -238,17 +246,31 @@
       <p class="text-secondary mb-lg">تم إنشاء حساب المندوب. يرجى نسخ البيانات التالية وإرسالها للمندوب.</p>
       
       <div class="bg-input radius-md p-md mb-lg text-right" style="border: 1px solid var(--border-color)">
-        <div class="mb-sm">
-                    <span class="text-secondary" style="font-size:0.8rem;">بيانات التسجيل:</span>
-          <br>
-          <strong class="text-primary text-lg" id="new-staff-email" style="user-select: all;"></strong>
+        <div class="mb-sm" style="display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <span class="text-secondary" style="font-size:0.8rem;">البريد الإلكتروني</span><br>
+            <strong class="text-primary text-lg" id="new-staff-email" style="user-select: all;"></strong>
+          </div>
+          <button type="button" class="btn btn-outline btn-sm copy-btn" data-target="new-staff-email" title="نسخ البريد" style="min-width:auto;padding:6px 10px;">
+            <i class="fas fa-copy"></i>
+          </button>
         </div>
-        <div>
-                    <span class="text-secondary" style="font-size:0.8rem;">بيانات التسجيل:</span>
-          <br>
-          <strong class="text-accent text-lg" id="new-staff-password" style="user-select: all;"></strong>
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <span class="text-secondary" style="font-size:0.8rem;">كلمة المرور</span><br>
+            <strong class="text-accent text-lg" id="new-staff-password" style="user-select: all;"></strong>
+          </div>
+          <button type="button" class="btn btn-outline btn-sm copy-btn" data-target="new-staff-password" title="نسخ كلمة المرور" style="min-width:auto;padding:6px 10px;">
+            <i class="fas fa-copy"></i>
+          </button>
         </div>
       </div>
+      
+      <button class="btn btn-primary btn-block" onclick="document.getElementById('credentials-modal').classList.remove('active')">
+        <i class="fas fa-check ml-xs"></i> تم الحفظ
+      </button>
+    </div>
+  </div>
       
       <button class="btn btn-primary btn-block" onclick="document.getElementById('credentials-modal').classList.remove('active')">
                 <i class="fas fa-check ml-xs"></i> تم الحفظ
@@ -306,6 +328,7 @@
           if (response.data.length === 0) {
             tbody.innerHTML = '<tr><td colspan="5" class="text-center text-secondary py-xl">لا توجد بيانات حالياً</td></tr>';
           } else {
+            window.currentStaffData = response.data;
             tbody.innerHTML = response.data.map(staff => `
               <tr>
                 <td><strong>${staff.name}</strong></td>
@@ -398,6 +421,12 @@
         btn.disabled = false;
         return;
       }
+      if (/[\u0600-\u06FF]/.test(name)) {
+        toast.error('لا يسمح بإدخال الاسم باللغة العربية (يرجى كتابة الاسم بالإنجليزية)');
+        btn.classList.remove('btn-loading');
+        btn.disabled = false;
+        return;
+      }
 
         const phone = document.getElementById('staff-phone').value.trim();
         const token = await authManager.getIdToken();
@@ -439,6 +468,8 @@
       document.getElementById('edit-staff-phone').value = staff.phone || '';
       document.getElementById('edit-staff-email').value = staff.email || '';
       document.getElementById('edit-staff-password').value = staff.password || '';
+      document.getElementById('edit-staff-email').value = staff.email || '';
+      document.getElementById('edit-staff-password').value = staff.password || '';
       document.getElementById('edit-delivery-modal').classList.add('active');
     }
 
@@ -447,6 +478,15 @@
       const id = document.getElementById('edit-staff-id').value;
       const name = document.getElementById('edit-staff-name').value;
       const phone = document.getElementById('edit-staff-phone').value;
+      const email = document.getElementById('edit-staff-email').value;
+      const password = document.getElementById('edit-staff-password').value;
+      
+      if (/[\u0600-\u06FF]/.test(name)) {
+        toast.error('لا يسمح بإدخال الاسم باللغة العربية');
+        btn.disabled = false;
+        btn.classList.remove('btn-loading');
+        return;
+      }
       const email = document.getElementById('edit-staff-email').value;
       const password = document.getElementById('edit-staff-password').value;
       if (/[\u0600-\u06FF]/.test(name)) {
@@ -466,7 +506,7 @@
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}` 
           },
-          body: JSON.stringify({ name, phone })
+          body: JSON.stringify({ name, phone, email, password })
         });
         const response = await res.json();
         
