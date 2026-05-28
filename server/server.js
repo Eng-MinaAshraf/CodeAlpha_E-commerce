@@ -47,11 +47,15 @@ app.use(helmet({
   crossOriginOpenerPolicy: false, // السماح لنوافذ المصادقة المنبثقة (Popups) بالتواصل مع الصفحة
 }));
 
-// السماح بالطلبات من جميع المصادر (CORS)
+// السماح بالطلبات من المصادر الخارجية بشكل ديناميكي متوافق مع الـ Credentials
 app.use(cors({
-    origin: '*', 
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+  origin: function (origin, callback) {
+    // السماح بأي موقع خارجي (Netlify, Vercel, Localhost) لتبادل البيانات والمصادقة بنجاح
+    callback(null, true);
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 // تسجيل الطلبات في وحدة التحكم (Logging)
