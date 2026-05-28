@@ -8,7 +8,8 @@ import { authManager } from "./auth.js";
 import { toast } from "./toast.js";
 
 /** @type {string} Base URL for all API endpoints */
-const API_BASE = "https://e-commerce-production-09c3.up.railway.app/api";
+const API_BASE = "https://ebpscvuzeqlatbklqkwo.supabase.co/rest/v1";
+const SUPABASE_ANON_KEY = "sb_publishable_evHGKFvrUqhOk1uR8rK47g_Se6qOeew";
 
 /**
  * Centralized API service for all server communication
@@ -33,9 +34,15 @@ class ApiService {
         ...options,
         headers: {
           ...authHeaders,
+          "apikey": SUPABASE_ANON_KEY,
           ...options.headers
         }
       };
+
+      // إذا لم يكن ترويسة تفويض المصادقة موجودة، استخدم Anon Key الافتراضية
+      if (!mergedOptions.headers["Authorization"]) {
+        mergedOptions.headers["Authorization"] = `Bearer ${SUPABASE_ANON_KEY}`;
+      }
 
       const response = await fetch(`${API_BASE}${endpoint}`, mergedOptions);
 
@@ -223,9 +230,13 @@ class ApiService {
 
       // الحصول على رأس المصادقة فقط (بدون Content-Type ليتم تعيينه تلقائياً)
       const token = await authManager.getIdToken();
-      const headers = {};
+      const headers = {
+        "apikey": SUPABASE_ANON_KEY
+      };
       if (token) {
         headers["Authorization"] = `Bearer ${token}`;
+      } else {
+        headers["Authorization"] = `Bearer ${SUPABASE_ANON_KEY}`;
       }
 
       const response = await fetch(`${API_BASE}/products/upload-images`, {
