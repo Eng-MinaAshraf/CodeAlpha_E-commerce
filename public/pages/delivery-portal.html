@@ -178,7 +178,8 @@
     document.getElementById('logout-btn').addEventListener('click', () => {
       localStorage.removeItem('delivery_token');
       localStorage.removeItem('delivery_name');
-      window.location.replace('/pages/delivery-login.html');
+      localStorage.removeItem('delivery_agent');
+      window.location.href = 'delivery-login.html';
     });
 
     async function loadOrders() {
@@ -192,7 +193,9 @@
         // إذا انتهت الصلاحية أو تم طرده
         if (res.status === 401) {
           localStorage.removeItem('delivery_token');
-          window.location.replace('/pages/delivery-login.html');
+          localStorage.removeItem('delivery_name');
+          localStorage.removeItem('delivery_agent');
+          window.location.href = 'delivery-login.html';
           return;
         }
 

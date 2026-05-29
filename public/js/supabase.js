@@ -754,6 +754,11 @@ const originalFetch = window.fetch;
 window.fetch = async function (input, options = {}) {
   let url = typeof input === 'string' ? input : input.url;
 
+  // 🟢 شرط الأمان: إذا كان الطلب لصفحة HTML أو ملف ثابت وليس للـ API، مرره فوراً بشكل طبيعي
+  if (!url.includes('/api/') && !url.includes('supabase.co')) {
+    return originalFetch.apply(this, arguments);
+  }
+
   // Extract headers to check if it has the Supabase API key (SDK direct query)
   const headers = options.headers || {};
   let hasApiKey = false;
