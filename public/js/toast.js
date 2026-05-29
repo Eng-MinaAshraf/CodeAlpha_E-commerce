@@ -4,6 +4,8 @@
  * @module toast
  */
 
+import { supabase } from "./supabase.js";
+
 /**
  * Toast notification manager
  * Provides success, error, warning, and info notifications

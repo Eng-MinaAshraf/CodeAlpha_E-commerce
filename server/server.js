@@ -50,7 +50,7 @@ app.use(helmet({
 // السماح بالطلبات من المصادر الخارجية بشكل ديناميكي متوافق مع الـ Credentials
 app.use(cors({
   origin: function (origin, callback) {
-    // السماح بأي موقع خارجي (Netlify, Vercel, Localhost) لتبادل البيانات والمصادقة بنجاح
+    // السماح بأي موقع خارجي (Netlify, Localhost) لتبادل البيانات والمصادقة بنجاح
     callback(null, true);
   },
   credentials: true,

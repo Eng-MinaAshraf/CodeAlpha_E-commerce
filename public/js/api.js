@@ -8,7 +8,7 @@ import { authManager } from "./auth.js";
 import { toast } from "./toast.js";
 
 /** @type {string} Base URL for all API endpoints */
-const API_BASE = "https://e-commerce-production-09c3.up.railway.app/api";
+const API_BASE = "https://ebpscvuzeqlatbklqkwo.supabase.co/rest/v1";
 
 /**
  * Centralized API service for all server communication
