@@ -169,23 +169,23 @@
       </div>
       <form id="add-product-form">
         <div class="form-group">
-          <label class="form-label" for="prod-name">اسم المنتج</label>
+          <label class="form-label" for="name">اسم المنتج</label>
           <input type="text" id="name" class="form-input" required minlength="2">
         </div>
         
         <div class="flex-between gap-md">
           <div class="form-group flex-1">
-            <label class="form-label" for="prod-category">الفئة</label>
+            <label class="form-label" for="price">السعر ($)</label>
             <input type="number" id="price" class="form-input" required min="1" step="0.01">
           </div>
           <div class="form-group flex-1">
-            <label class="form-label" for="prod-price">السعر ($)</label>
+            <label class="form-label" for="stock">المخزون</label>
             <input type="number" id="stock" class="form-input" required min="0" value="10">
           </div>
         </div>
 
         <div class="form-group">
-          <label class="form-label" for="prod-stock">المخزون</label>
+          <label class="form-label" for="category">الفئة</label>
           <select id="category" class="form-select" required>
             <option value="">-- اختر الفئة --</option>
             <option value="electronics">إلكترونيات</option>
@@ -199,12 +199,12 @@
         </div>
 
         <div class="form-group">
-          <label class="form-label" for="prod-desc">الوصف</label>
+          <label class="form-label" for="description">الوصف</label>
           <textarea id="description" class="form-textarea" required></textarea>
         </div>
 
         <div class="form-group">
-          <label class="form-label" for="prod-images">صور المنتج</label>
+          <label class="form-label" for="image-file">صور المنتج</label>
           <input type="file" id="image-file" class="form-input" accept="image/*" multiple required>
         </div>
         

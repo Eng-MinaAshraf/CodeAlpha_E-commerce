@@ -185,19 +185,19 @@
       <form id="edit-delivery-form">
         <input type="hidden" id="edit-staff-id">
         <div class="form-group">
-          <label class="form-label">اسم الموظف (بالإنجليزية)</label>
+          <label class="form-label" for="edit-staff-name">اسم الموظف (بالإنجليزية)</label>
           <input type="text" id="edit-staff-name" class="form-input" required>
         </div>
         <div class="form-group">
-          <label class="form-label">رقم الهاتف</label>
+          <label class="form-label" for="edit-staff-phone">رقم الهاتف</label>
           <input type="tel" id="edit-staff-phone" class="form-input" required>
         </div>
         <div class="form-group">
-          <label class="form-label">البريد الإلكتروني</label>
+          <label class="form-label" for="edit-staff-email">البريد الإلكتروني</label>
           <input type="email" id="edit-staff-email" class="form-input" required>
         </div>
         <div class="form-group">
-          <label class="form-label">كلمة المرور الافتراضية / الحديثة</label>
+          <label class="form-label" for="edit-staff-password">كلمة المرور الافتراضية / الحديثة</label>
           <input type="text" id="edit-staff-password" class="form-input" required>
         </div>
         <button type="submit" class="btn btn-primary btn-block mt-lg" id="edit-submit-staff-btn">
@@ -243,7 +243,7 @@
         </div>
 
         <div id="credentials-update-password-container" style="border-top: 1px dashed var(--border-color); padding-top: 15px;">
-          <label class="form-label text-right" style="display:block; font-size:0.8rem; margin-bottom:5px;">تعيين كلمة مرور جديدة</label>
+          <label class="form-label text-right" for="credentials-new-password-input" style="display:block; font-size:0.8rem; margin-bottom:5px;">تعيين كلمة مرور جديدة</label>
           <div style="display:flex; gap:8px;">
             <input type="text" id="credentials-new-password-input" class="form-input" placeholder="أدخل كلمة مرور جديدة للتحديث" style="padding: 8px 12px; font-size: 0.9rem;">
             <button type="button" class="btn btn-primary" id="credentials-update-btn" style="min-width:auto; padding:8px 15px; font-size:0.9rem;">تحديث</button>

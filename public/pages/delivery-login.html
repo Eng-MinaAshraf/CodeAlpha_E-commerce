@@ -141,7 +141,7 @@
 
     <form id="delivery-login-form">
       <div class="form-group text-right mb-lg">
-        <label class="form-label" style="font-size: 0.9rem; margin-bottom: 0.5rem; display: block; color: var(--color-text-secondary);">البريد الإلكتروني للعمل</label>
+        <label class="form-label" for="email" style="font-size: 0.9rem; margin-bottom: 0.5rem; display: block; color: var(--color-text-secondary);">البريد الإلكتروني للعمل</label>
         <div class="input-wrapper">
           <i class="fas fa-envelope"></i>
           <input type="email" id="email" placeholder="name.1234@delivery.store.com" required>
@@ -149,7 +149,7 @@
       </div>
       
       <div class="form-group text-right mb-xl">
-        <label class="form-label" style="font-size: 0.9rem; margin-bottom: 0.5rem; display: block; color: var(--color-text-secondary);">الرقم السري</label>
+        <label class="form-label" for="password" style="font-size: 0.9rem; margin-bottom: 0.5rem; display: block; color: var(--color-text-secondary);">الرقم السري</label>
         <div class="input-wrapper">
           <i class="fas fa-lock"></i>
           <input type="password" id="password" placeholder="••••••••" required>
@@ -190,11 +190,11 @@
       <!-- Form 1: New Request -->
       <form id="forgot-request-form">
         <div class="form-group mb-md">
-          <label class="form-label" style="display:block; font-size:0.85rem; margin-bottom:5px; color:var(--color-text-secondary);">الاسم الكامل للمندوب (مطلوب)</label>
+          <label class="form-label" for="req-agent-name" style="display:block; font-size:0.85rem; margin-bottom:5px; color:var(--color-text-secondary);">الاسم الكامل للمندوب (مطلوب)</label>
           <input type="text" id="req-agent-name" class="form-input w-100" placeholder="مثال: Ahmed Ali" required style="width:100%; box-sizing: border-box; background: rgba(15, 20, 25, 0.6); color: white; border: 1px solid rgba(255,255,255,0.05); padding: 10px; border-radius: 8px;">
         </div>
         <div class="form-group mb-lg">
-          <label class="form-label" style="display:block; font-size:0.85rem; margin-bottom:5px; color:var(--color-text-secondary);">البريد الإلكتروني (اختياري)</label>
+          <label class="form-label" for="req-agent-email" style="display:block; font-size:0.85rem; margin-bottom:5px; color:var(--color-text-secondary);">البريد الإلكتروني (اختياري)</label>
           <input type="email" id="req-agent-email" class="form-input w-100" placeholder="name.1234@delivery.store.com" style="width:100%; box-sizing: border-box; background: rgba(15, 20, 25, 0.6); color: white; border: 1px solid rgba(255,255,255,0.05); padding: 10px; border-radius: 8px;">
         </div>
         <button type="submit" class="btn btn-primary btn-block w-100" id="submit-request-btn" style="width:100%; padding: 12px; border-radius: 8px;">إرسال الطلب للمسؤول</button>
@@ -203,7 +203,7 @@
       <!-- Form 2: Check Status -->
       <form id="forgot-status-form" style="display:none;">
         <div class="form-group mb-lg">
-          <label class="form-label" style="display:block; font-size:0.85rem; margin-bottom:5px; color:var(--color-text-secondary);">الاسم الكامل للمندوب كما هو مسجل</label>
+          <label class="form-label" for="status-agent-name" style="display:block; font-size:0.85rem; margin-bottom:5px; color:var(--color-text-secondary);">الاسم الكامل للمندوب كما هو مسجل</label>
           <input type="text" id="status-agent-name" class="form-input w-100" placeholder="مثال: Ahmed Ali" required style="width:100%; box-sizing: border-box; background: rgba(15, 20, 25, 0.6); color: white; border: 1px solid rgba(255,255,255,0.05); padding: 10px; border-radius: 8px;">
         </div>
         <button type="submit" class="btn btn-primary btn-block w-100" id="submit-status-btn" style="width:100%; padding: 12px; border-radius: 8px;">فحص حالة الطلب</button>
