@@ -167,7 +167,6 @@
               <img src="${product.image}" alt="${product.name}" loading="lazy">
             </div>
             <div class="product-card-body">
-              <span class="badge badge-outline product-card-category">${translateCategory(product.category)}</span>
               <h3 class="product-card-title" style="cursor: pointer" onclick="location.href='/pages/product-details.html?id=${product.id}'">${product.name}</h3>
               <p class="product-card-desc">${truncateText(product.description, 60)}</p>
               <div class="product-card-footer">
