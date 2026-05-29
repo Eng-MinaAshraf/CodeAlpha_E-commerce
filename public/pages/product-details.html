@@ -125,7 +125,7 @@
         let galleryHtml = '';
         if (product.images && product.images.length > 1) {
           galleryHtml = `
-            <div class="product-gallery mt-md flex gap-sm" style="overflow-x: auto; padding-bottom: 8px;">
+            <div class="product-gallery mt-md flex gap-sm" style="overflow-x: auto; padding: 0 var(--space-md) var(--space-md); width: 100%; box-sizing: border-box;">
               ${product.images.map((img, idx) => `
                 <img src="${img}" class="gallery-thumb ${idx === 0 ? 'active' : ''}" style="width: 80px; height: 80px; object-fit: cover; border-radius: var(--radius-sm); cursor: pointer; border: 2px solid ${idx === 0 ? 'var(--color-accent)' : 'transparent'}; transition: border 0.3s;" onclick="document.getElementById('main-product-image').src='${img}'; document.querySelectorAll('.gallery-thumb').forEach(el=>el.style.borderColor='transparent'); this.style.borderColor='var(--color-accent)';">
               `).join('')}

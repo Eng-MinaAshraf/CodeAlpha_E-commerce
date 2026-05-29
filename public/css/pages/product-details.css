@@ -6,20 +6,21 @@
 }
 
 .product-image-container {
-  background: white;
+  background-color: #e5e7eb;
   border-radius: var(--radius-lg);
   overflow: hidden;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: var(--space-xl);
+  padding: 0;
   box-shadow: var(--shadow-md);
 }
 
 .product-image {
   width: 100%;
-  max-height: 500px;
-  object-fit: contain;
+  height: 500px;
+  object-fit: cover;
   transition: transform var(--transition-base);
 }
 
@@ -97,11 +98,11 @@
   }
   
   .product-image-container {
-    padding: var(--space-lg);
+    padding: 0;
   }
   
   .product-image {
-    max-height: 400px;
+    height: 400px;
   }
 }
 
