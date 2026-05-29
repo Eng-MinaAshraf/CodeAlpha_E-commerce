@@ -750,6 +750,7 @@ async function handleMockApi(urlString, options) {
   return errorResponse('المسار المطلوب غير موجود في المحاكي', 404);
 }
 
+let isFetchingFromMock = false;
 const originalFetch = window.fetch;
 window.fetch = async function (input, options = {}) {
   let url = typeof input === 'string' ? input : input.url;
@@ -757,15 +758,18 @@ window.fetch = async function (input, options = {}) {
   let isIntercepted = false;
   let normalizedUrl = url;
 
-  if (url.includes('/api/')) {
-    isIntercepted = true;
-  } else if (url.includes('ebpscvuzeqlatbklqkwo.supabase.co/rest/v1')) {
-    isIntercepted = true;
-    normalizedUrl = url.replace(/https?:\/\/ebpscvuzeqlatbklqkwo\.supabase\.co\/rest\/v1/, '/api');
+  if (!isFetchingFromMock) {
+    if (url.includes('/api/')) {
+      isIntercepted = true;
+    } else if (url.includes('ebpscvuzeqlatbklqkwo.supabase.co/rest/v1')) {
+      isIntercepted = true;
+      normalizedUrl = url.replace(/https?:\/\/ebpscvuzeqlatbklqkwo\.supabase\.co\/rest\/v1/, '/api');
+    }
   }
 
   if (isIntercepted) {
     try {
+      isFetchingFromMock = true;
       return await handleMockApi(normalizedUrl, options);
     } catch (error) {
       console.error('[Mock Fetch Error]:', error);
@@ -776,6 +780,8 @@ window.fetch = async function (input, options = {}) {
         status: error.status || 500,
         headers: { 'Content-Type': 'application/json' }
       });
+    } finally {
+      isFetchingFromMock = false;
     }
   }
 
